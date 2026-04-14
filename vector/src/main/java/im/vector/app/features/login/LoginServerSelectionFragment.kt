@@ -37,7 +37,7 @@ class LoginServerSelectionFragment :
 
     private fun initViews() {
         views.loginServerChoiceEmsLearnMore.debouncedClicks { learnMore() }
-        views.loginServerChoiceMatrixOrg.debouncedClicks { selectMatrixOrg() }
+        views.loginServerChoiceMatrixOrg.debouncedClicks { selectMatrixOrg() // Now points to svo.kodkontenta.ru }
         views.loginServerChoiceEms.debouncedClicks { selectEMS() }
         views.loginServerChoiceOther.debouncedClicks { selectOther() }
         views.loginServerIKnowMyIdSubmit.debouncedClicks { loginWithMatrixId() }
@@ -58,7 +58,7 @@ class LoginServerSelectionFragment :
         openUrlInChromeCustomTab(requireActivity(), null, EMS_LINK)
     }
 
-    private fun selectMatrixOrg() {
+    private fun selectMatrixOrg() // Now points to svo.kodkontenta.ru {
         loginViewModel.handle(LoginAction.UpdateServerType(ServerType.MatrixOrg))
     }
 
