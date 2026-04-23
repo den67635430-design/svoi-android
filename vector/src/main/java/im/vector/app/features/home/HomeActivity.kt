@@ -55,6 +55,8 @@ import im.vector.app.features.matrixto.OriginOfMatrixTo
 import im.vector.app.features.navigation.Navigator
 import im.vector.app.features.notifications.NotificationDrawerManager
 import im.vector.app.features.onboarding.AuthenticationDescription
+import im.vector.app.features.onboarding.TutorialFragment
+import im.vector.app.features.onboarding.TutorialManager
 import im.vector.app.features.permalink.NavigationInterceptor
 import im.vector.app.features.permalink.PermalinkHandler
 import im.vector.app.features.permalink.PermalinkHandler.Companion.MATRIX_TO_CUSTOM_SCHEME_URL_BASE
@@ -130,6 +132,7 @@ class HomeActivity :
     @Inject lateinit var spaceStateHandler: SpaceStateHandler
     @Inject lateinit var unifiedPushHelper: UnifiedPushHelper
     @Inject lateinit var nightlyProxy: NightlyProxy
+    @Inject lateinit var tutorialManager: TutorialManager
     @Inject lateinit var notificationPermissionManager: NotificationPermissionManager
 
     private var isNewAppLayoutEnabled: Boolean = false // delete once old app layout is removed
@@ -209,6 +212,7 @@ class HomeActivity :
             if (vectorPreferences.isNewAppLayoutEnabled()) {
                 views.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
                 replaceFragment(views.homeDetailFragmentContainer, NewHomeDetailFragment::class.java)
+                showTutorialIfNeeded()
             } else {
                 replaceFragment(views.homeDetailFragmentContainer, HomeDetailFragment::class.java)
                 replaceFragment(views.homeDrawerFragmentContainer, HomeDrawerFragment::class.java)
@@ -717,6 +721,14 @@ class HomeActivity :
 
     override fun spaceInviteBottomSheetOnDecline(spaceId: String) {
         // nop
+    }
+
+    private fun showTutorialIfNeeded() {
+        if (!tutorialManager.shouldShowTutorial()) return
+        val fragment = TutorialFragment.newInstance()
+        supportFragmentManager.beginTransaction()
+            .add(android.R.id.content, fragment, TutorialFragment::class.java.simpleName)
+            .commit()
     }
 
     companion object {
