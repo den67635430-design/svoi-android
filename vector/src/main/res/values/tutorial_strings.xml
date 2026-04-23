@@ -1,0 +1,22 @@
+    <!-- Tutorial Onboarding -->
+    <string name="tutorial_step_1_title">Поиск контактов</string>
+    <string name="tutorial_step_1_desc">Нажмите сюда, чтобы найти своих друзей в СВОи</string>
+    <string name="tutorial_step_2_title">Личный чат</string>
+    <string name="tutorial_step_2_desc">Нажмите для создания приватного чата с другом</string>
+    <string name="tutorial_step_3_title">Создание группы</string>
+    <string name="tutorial_step_3_desc">Создайте групповой чат для общения с несколькими людьми</string>
+    <string name="tutorial_step_4_title">Видеозвонок</string>
+    <string name="tutorial_step_4_desc">Нажмите для начала видеозвонка через безопасный канал</string>
+    <string name="tutorial_step_5_title">Отправка файлов</string>
+    <string name="tutorial_step_5_desc">Прикрепляйте и отправляйте любые файлы</string>
+    <string name="tutorial_step_6_title">Стикеры и реакции</string>
+    <string name="tutorial_step_6_desc">Выражайте эмоции стикерами и реакциями</string>
+    <string name="tutorial_step_7_title">Настройки профиля</string>
+    <string name="tutorial_step_7_desc">Настройте свой профиль и параметры приложения</string>
+    <string name="tutorial_step_8_title">Блокировка и мут</string>
+    <string name="tutorial_step_8_desc">Заблокируйте или отключите звук для нежелательных контактов</string>
+    <string name="tutorial_next">Далее</string>
+    <string name="tutorial_skip">Пропустить</string>
+    <string name="tutorial_finish">Готово</string>
+    <string name="tutorial_replay">Повторить обучение</string>
+    <string name="tutorial_arrow_desc">Стрелка на элемент</string>
