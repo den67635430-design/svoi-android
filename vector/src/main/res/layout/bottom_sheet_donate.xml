@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="#1E1E1E">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="💝 Помочь разработчику"
+        android:textColor="#FFFFFF"
+        android:textSize="22sp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Поддержите развитие приложения пожертвованием. Каждый рубль идёт на улучшение СВОи."
+        android:textColor="#CCCCCC"
+        android:textSize="14sp"
+        android:layout_marginTop="8dp"/>
+
+    <LinearLayout
+        android:id="@+id/amountSelector"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="16dp">
+
+        <TextView
+            android:id="@+id/amountLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="100 ₽"
+            android:textColor="#4CAF50"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:gravity="center"/>
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/amountSlider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:valueFrom="10"
+            android:valueTo="10000"
+            android:stepSize="10"
+            android:value="100"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp"
+            android:weightSum="4">
+
+            <Button
+                android:id="@+id/amount100"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="100 ₽"
+                android:layout_marginEnd="4dp"/>
+            <Button
+                android:id="@+id/amount500"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="500 ₽"
+                android:layout_marginEnd="4dp"/>
+            <Button
+                android:id="@+id/amount1000"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="1000 ₽"
+                android:layout_marginEnd="4dp"/>
+            <Button
+                android:id="@+id/amount5000"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="5000 ₽"/>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/generateQrButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Сгенерировать QR для оплаты"
+            android:backgroundTint="#4CAF50"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="16dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/qrContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="16dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/qrImage"
+            android:layout_width="256dp"
+            android:layout_height="256dp"
+            android:background="#FFFFFF"
+            android:padding="8dp"/>
+
+        <Button
+            android:id="@+id/simulateButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Симулировать оплату (Demo)"
+            android:backgroundTint="#4CAF50"
+            android:layout_marginTop="16dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/thankYou"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="24dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🙏 Спасибо за поддержку!"
+            android:textColor="#4CAF50"
+            android:textSize="24sp"
+            android:textStyle="bold"/>
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/errorLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#F44336"
+        android:layout_marginTop="16dp"
+        android:visibility="gone"/>
+
+    <Button
+        android:id="@+id/closeButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Закрыть"
+        android:backgroundTint="#555555"
+        android:layout_marginTop="16dp"/>
+</LinearLayout>
