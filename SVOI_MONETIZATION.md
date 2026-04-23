@@ -1,8 +1,11 @@
-# СВОи Monetization
+# СВОи Monetization (v2)
 
-Файлы монетизации добавлены (23.04.2026):
-- SvoiConfig.kt — конфиг подписок (449/749 руб)
-- SubscriptionFragment — UI выбора плана
-- DonateBottomSheet — окно донатов
-- Admin: den67635430@gmail.com
-- DEMO_MODE = true (всё бесплатно для теста)
+Система монетизации СВОи мессенджера:
+- Free (0 руб): базовые функции + read receipts + edit + auto-delete
+- Premium (449 руб/мес): стикеры, пузырьки, неограниченные файлы
+- Business (749 руб/мес): аналитика, API, поддержка
+
+Admin: den67635430@gmail.com (полный доступ)
+DEMO_MODE=true (всё бесплатно для теста)
+
+Триггер пересборки APK: 23.04.2026
