@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#121212">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Подписки СВОи"
+            android:textColor="#FFFFFF"
+            android:textSize="28sp"
+            android:textStyle="bold"/>
+
+        <!-- Бейджи -->
+        <TextView
+            android:id="@+id/adminBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="👑 Admin Mode"
+            android:background="#FFD700"
+            android:textColor="#000000"
+            android:padding="8dp"
+            android:layout_marginTop="12dp"
+            android:visibility="gone"
+            tools:visibility="visible"/>
+
+        <TextView
+            android:id="@+id/demoBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🧪 Demo режим — всё бесплатно"
+            android:background="#4CAF50"
+            android:textColor="#FFFFFF"
+            android:padding="8dp"
+            android:layout_marginTop="12dp"/>
+
+        <TextView
+            android:id="@+id/currentTierLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#CCCCCC"
+            android:textSize="14sp"
+            android:layout_marginTop="12dp"
+            tools:text="Текущая подписка: Free"/>
+
+        <!-- FREE -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#1E1E1E"
+            android:padding="16dp"
+            android:layout_marginTop="24dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Free"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
+                android:textStyle="bold"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="0 ₽ / месяц"
+                android:textColor="#4CAF50"
+                android:textSize="18sp"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="• Видеть когда прочитано\n• Редактирование сообщений\n• Автоудаление сообщений\n• Базовые чаты и видео"
+                android:textColor="#CCCCCC"
+                android:layout_marginTop="8dp"/>
+            <Button
+                android:id="@+id/tierFreeButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Выбрать Free"
+                android:backgroundTint="#555555"
+                android:layout_marginTop="12dp"/>
+        </LinearLayout>
+
+        <!-- PREMIUM -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#1E1E1E"
+            android:padding="16dp"
+            android:layout_marginTop="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Premium ⭐"
+                android:textColor="#FFD700"
+                android:textSize="22sp"
+                android:textStyle="bold"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="449 ₽ / месяц"
+                android:textColor="#FFD700"
+                android:textSize="18sp"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="• Всё из Free\n• Кастомные стикеры\n• Кастомные пузырьки\n• Неограниченные файлы\n• Отправка по расписанию\n• Премиум-бейдж"
+                android:textColor="#CCCCCC"
+                android:layout_marginTop="8dp"/>
+            <Button
+                android:id="@+id/tierPremiumButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Выбрать Premium"
+                android:backgroundTint="#FFD700"
+                android:textColor="#000000"
+                android:layout_marginTop="12dp"/>
+        </LinearLayout>
+
+        <!-- BUSINESS -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#1E1E1E"
+            android:padding="16dp"
+            android:layout_marginTop="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Business 💼"
+                android:textColor="#2196F3"
+                android:textSize="22sp"
+                android:textStyle="bold"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="749 ₽ / месяц"
+                android:textColor="#2196F3"
+                android:textSize="18sp"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="• Всё из Premium\n• Приоритетная поддержка\n• Аналитика и статистика\n• API для интеграций\n• Кастомные домены\n• Массовая рассылка\n• Резервные копии"
+                android:textColor="#CCCCCC"
+                android:layout_marginTop="8dp"/>
+            <Button
+                android:id="@+id/tierBusinessButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Выбрать Business"
+                android:backgroundTint="#2196F3"
+                android:textColor="#FFFFFF"
+                android:layout_marginTop="12dp"/>
+        </LinearLayout>
+
+        <!-- QR Container -->
+        <LinearLayout
+            android:id="@+id/qrContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="16dp"
+            android:layout_marginTop="24dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Отсканируйте QR для оплаты"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"/>
+
+            <ImageView
+                android:id="@+id/qrImage"
+                android:layout_width="256dp"
+                android:layout_height="256dp"
+                android:layout_marginTop="16dp"
+                android:background="#FFFFFF"
+                android:padding="8dp"/>
+
+            <Button
+                android:id="@+id/simulatePaymentButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Симулировать оплату (Demo)"
+                android:backgroundTint="#4CAF50"
+                android:layout_marginTop="16dp"/>
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/errorLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#F44336"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"/>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>
