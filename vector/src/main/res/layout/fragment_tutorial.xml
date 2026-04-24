@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- СВОи Мессенджер — Tutorial overlay layout -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/tutorialOverlay"
@@ -7,20 +6,16 @@
     android:layout_height="match_parent"
     android:background="#CC000000">
 
-    <!-- Стрелка на целевой элемент -->
     <ImageView
         android:id="@+id/tutorialArrow"
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:src="@drawable/ic_tutorial_arrow"
-        android:tint="@color/white"
+        android:tint="#FFFFFF"
         android:contentDescription="@string/tutorial_arrow_desc"
         android:visibility="gone"
-        tools:visibility="visible"
-        tools:layout_marginTop="200dp"
-        tools:layout_marginStart="100dp"/>
+        tools:visibility="visible"/>
 
-    <!-- Карточка с описанием внизу экрана -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -30,7 +25,6 @@
         android:padding="24dp"
         android:layout_margin="16dp">
 
-        <!-- Прогресс (1/8, 2/8, ...) -->
         <TextView
             android:id="@+id/tutorialProgress"
             android:layout_width="wrap_content"
@@ -48,7 +42,7 @@
             android:textColor="#FFFFFF"
             android:textSize="18sp"
             android:textStyle="bold"
-            tools:text="Поиск контактов"/>
+            tools:text="Search"/>
 
         <TextView
             android:id="@+id/tutorialDescription"
@@ -57,7 +51,7 @@
             android:layout_marginTop="8dp"
             android:textColor="#CCFFFFFF"
             android:textSize="14sp"
-            tools:text="Нажмите сюда, чтобы найти своих друзей"/>
+            tools:text="Press to find friends"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -68,11 +62,11 @@
 
             <Button
                 android:id="@+id/tutorialSkipButton"
-                style="@style/Widget.AppCompat.Button.Borderless"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/tutorial_skip"
-                android:textColor="#80FFFFFF"/>
+                android:textColor="#80FFFFFF"
+                android:background="@android:color/transparent"/>
 
             <Button
                 android:id="@+id/tutorialNextButton"
@@ -80,7 +74,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="@string/tutorial_next"
-                android:backgroundTint="@color/element_primary_color"/>
+                android:backgroundTint="#4CAF50"
+                android:textColor="#FFFFFF"/>
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>
