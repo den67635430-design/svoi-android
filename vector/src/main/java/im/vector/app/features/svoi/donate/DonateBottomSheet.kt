@@ -1,6 +1,3 @@
-/*
- * СВОи Donate — Bottom Sheet
- */
 package im.vector.app.features.svoi.donate
 
 import android.os.Bundle
@@ -8,11 +5,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import com.airbnb.mvrx.fragmentViewModel
-import com.airbnb.mvrx.withState
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import im.vector.app.databinding.BottomSheetDonateBinding
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class DonateBottomSheet : BottomSheetDialogFragment() {
@@ -20,7 +20,7 @@ class DonateBottomSheet : BottomSheetDialogFragment() {
     private var _binding: BottomSheetDonateBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: DonateViewModel by fragmentViewModel()
+    private val viewModel: DonateViewModel by viewModels()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = BottomSheetDonateBinding.inflate(inflater, container, false)
@@ -30,18 +30,9 @@ class DonateBottomSheet : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.amountSlider.addOnChangeListener { _, value, _ ->
-            viewModel.handle(DonateAction.SetAmount(value.toInt()))
-            render()
-        }
-        binding.generateQrButton.setOnClickListener {
-            viewModel.handle(DonateAction.GenerateQr)
-            render()
-        }
-        binding.simulateButton.setOnClickListener {
-            viewModel.handle(DonateAction.SimulatePayment)
-            render()
-        }
+        binding.amountSlider.addOnChangeListener { _, value, _ -> viewModel.setAmount(value.toInt()) }
+        binding.generateQrButton.setOnClickListener { viewModel.generateQr() }
+        binding.simulateButton.setOnClickListener { viewModel.simulatePayment() }
         binding.closeButton.setOnClickListener { dismiss() }
 
         binding.amount100.setOnClickListener { binding.amountSlider.value = 100f }
@@ -49,16 +40,15 @@ class DonateBottomSheet : BottomSheetDialogFragment() {
         binding.amount1000.setOnClickListener { binding.amountSlider.value = 1000f }
         binding.amount5000.setOnClickListener { binding.amountSlider.value = 5000f }
 
-        render()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.state.collect { render(it) }
+            }
+        }
     }
 
-    override fun onResume() {
-        super.onResume()
-        render()
-    }
-
-    private fun render() = withState(viewModel) { state ->
-        binding.amountLabel.text = "${state.amountRub} RUB"
+    private fun render(state: DonateViewState) {
+        binding.amountLabel.text = state.amountRub.toString() + " RUB"
         binding.progressBar.isVisible = state.isProcessing
 
         binding.qrContainer.isVisible = state.qrCodeBase64 != null
