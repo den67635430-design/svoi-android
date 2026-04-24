@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
     <!-- Tutorial Onboarding -->
     <string name="tutorial_step_1_title">Поиск контактов</string>
     <string name="tutorial_step_1_desc">Нажмите сюда, чтобы найти своих друзей в СВОи</string>
@@ -20,3 +22,4 @@
     <string name="tutorial_finish">Готово</string>
     <string name="tutorial_replay">Повторить обучение</string>
     <string name="tutorial_arrow_desc">Стрелка на элемент</string>
+</resources>
