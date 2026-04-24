@@ -1,22 +1,17 @@
 /*
  * СВОи Мессенджер — Onboarding Tutorial Fragment
- * Overlay поверх главного экрана с пошаговым обучением
  */
 package im.vector.app.features.onboarding
 
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.airbnb.mvrx.activityViewModel
 import com.airbnb.mvrx.withState
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.databinding.FragmentTutorialBinding
 import timber.log.Timber
 
@@ -35,26 +30,27 @@ class TutorialFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupClickListeners()
-        viewModel.onEach { state -> renderState(state) }
-    }
 
-    private fun setupClickListeners() {
         binding.tutorialNextButton.setOnClickListener {
             viewModel.handle(TutorialAction.NextStep)
+            render()
         }
         binding.tutorialSkipButton.setOnClickListener {
             viewModel.handle(TutorialAction.Skip)
+            render()
         }
-        binding.tutorialOverlay.setOnClickListener {
-            // Блокируем прокидывание тапов на фон
-        }
+        render()
     }
 
-    private fun renderState(state: TutorialViewState) {
+    override fun onResume() {
+        super.onResume()
+        render()
+    }
+
+    private fun render() = withState(viewModel) { state ->
         if (!state.isVisible || state.isCompleted) {
             view?.isVisible = false
-            return
+            return@withState
         }
         view?.isVisible = true
 
@@ -66,29 +62,24 @@ class TutorialFragment : Fragment() {
             if (state.isLastStep) im.vector.lib.strings.CommonStrings.tutorial_finish
             else im.vector.lib.strings.CommonStrings.tutorial_next
         )
-
-        // Позиционирование стрелки на целевой элемент
         positionArrow(step)
     }
 
     private fun positionArrow(step: TutorialStep) {
         val targetView = activity?.window?.decorView?.findViewWithTag<View>(step.targetTag)
         if (targetView == null) {
-            Timber.w("Tutorial: target element not found for step %s — skipping highlight", step.name)
+            Timber.w("Tutorial: target not found for %s", step.name)
             binding.tutorialArrow.isVisible = false
             return
         }
         try {
             val location = IntArray(2)
             targetView.getLocationOnScreen(location)
-            val targetX = location[0].toFloat() + targetView.width / 2f
-            val targetY = location[1].toFloat() - binding.tutorialArrow.height
-
-            binding.tutorialArrow.x = targetX - binding.tutorialArrow.width / 2f
-            binding.tutorialArrow.y = targetY
+            binding.tutorialArrow.x = location[0].toFloat() + targetView.width / 2f - binding.tutorialArrow.width / 2f
+            binding.tutorialArrow.y = location[1].toFloat() - binding.tutorialArrow.height
             binding.tutorialArrow.isVisible = true
         } catch (e: Exception) {
-            Timber.e(e, "Tutorial: failed to position arrow for step %s", step.name)
+            Timber.e(e, "Tutorial: arrow position failed for %s", step.name)
             binding.tutorialArrow.isVisible = false
         }
     }
