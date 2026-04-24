@@ -1,5 +1,5 @@
 /*
- * СВОи Мессенджер — Onboarding Tutorial Fragment
+ * СВОи Tutorial Fragment — overlay с 8 шагами
  */
 package im.vector.app.features.onboarding
 
@@ -9,10 +9,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import com.airbnb.mvrx.activityViewModel
-import com.airbnb.mvrx.withState
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import im.vector.app.databinding.FragmentTutorialBinding
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -21,7 +24,7 @@ class TutorialFragment : Fragment() {
     private var _binding: FragmentTutorialBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: TutorialViewModel by activityViewModel()
+    private val viewModel: TutorialViewModel by activityViewModels()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentTutorialBinding.inflate(inflater, container, false)
@@ -31,26 +34,20 @@ class TutorialFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.tutorialNextButton.setOnClickListener {
-            viewModel.handle(TutorialAction.NextStep)
-            render()
+        binding.tutorialNextButton.setOnClickListener { viewModel.nextStep() }
+        binding.tutorialSkipButton.setOnClickListener { viewModel.skip() }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.state.collect { render(it) }
+            }
         }
-        binding.tutorialSkipButton.setOnClickListener {
-            viewModel.handle(TutorialAction.Skip)
-            render()
-        }
-        render()
     }
 
-    override fun onResume() {
-        super.onResume()
-        render()
-    }
-
-    private fun render() = withState(viewModel) { state ->
+    private fun render(state: TutorialViewState) {
         if (!state.isVisible || state.isCompleted) {
             view?.isVisible = false
-            return@withState
+            return
         }
         view?.isVisible = true
 
@@ -62,10 +59,7 @@ class TutorialFragment : Fragment() {
             if (state.isLastStep) im.vector.lib.strings.CommonStrings.tutorial_finish
             else im.vector.lib.strings.CommonStrings.tutorial_next
         )
-        positionArrow(step)
-    }
 
-    private fun positionArrow(step: TutorialStep) {
         val targetView = activity?.window?.decorView?.findViewWithTag<View>(step.targetTag)
         if (targetView == null) {
             Timber.w("Tutorial: target not found for %s", step.name)
@@ -79,7 +73,7 @@ class TutorialFragment : Fragment() {
             binding.tutorialArrow.y = location[1].toFloat() - binding.tutorialArrow.height
             binding.tutorialArrow.isVisible = true
         } catch (e: Exception) {
-            Timber.e(e, "Tutorial: arrow position failed for %s", step.name)
+            Timber.e(e, "Tutorial arrow position failed")
             binding.tutorialArrow.isVisible = false
         }
     }
