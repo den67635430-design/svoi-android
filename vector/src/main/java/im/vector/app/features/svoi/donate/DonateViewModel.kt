@@ -1,76 +1,65 @@
-/*
- * СВОи Donate — ViewModel
- * Логика донатов: 10-10000 руб, QR, demo автоподтверждение
- */
 package im.vector.app.features.svoi.donate
 
-import com.airbnb.mvrx.MavericksViewModelFactory
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
-import im.vector.app.core.di.MavericksAssistedViewModelFactory
-import im.vector.app.core.di.hiltMavericksViewModelFactory
-import im.vector.app.core.platform.EmptyViewEvents
-import im.vector.app.core.platform.VectorViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import im.vector.app.features.svoi.SvoiConfig
 import im.vector.app.features.svoi.api.SvoiApiClient
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
-class DonateViewModel @AssistedInject constructor(
-    @Assisted initialState: DonateViewState,
+@HiltViewModel
+class DonateViewModel @Inject constructor(
     private val apiClient: SvoiApiClient,
-) : VectorViewModel<DonateViewState, DonateAction, EmptyViewEvents>(initialState) {
+) : ViewModel() {
 
-    @AssistedFactory
-    interface Factory : MavericksAssistedViewModelFactory<DonateViewModel, DonateViewState> {
-        override fun create(initialState: DonateViewState): DonateViewModel
+    private val _state = MutableStateFlow(DonateViewState())
+    val state: StateFlow<DonateViewState> = _state.asStateFlow()
+
+    fun setAmount(amount: Int) {
+        _state.value = _state.value.copy(amountRub = amount.coerceIn(10, 10000))
     }
 
-    companion object : MavericksViewModelFactory<DonateViewModel, DonateViewState> by hiltMavericksViewModelFactory()
-
-    override fun handle(action: DonateAction) {
-        when (action) {
-            is DonateAction.SetAmount -> setState { copy(amountRub = action.amount.coerceIn(10, 10000)) }
-            DonateAction.GenerateQr -> handleGenerateQr()
-            DonateAction.SimulatePayment -> handleSimulate()
-            DonateAction.Close -> setState { copy(qrCodeBase64 = null, orderId = null, isCompleted = false) }
+    fun generateQr() {
+        val s = _state.value
+        if (!s.isValid) {
+            _state.value = s.copy(errorMessage = "Amount must be between 10 and 10000 RUB")
+            return
         }
-    }
-
-    private fun handleGenerateQr() = withState { state ->
-        if (!state.isValid) {
-            setState { copy(errorMessage = "Сумма должна быть от 10 до 10000 руб") }
-            return@withState
-        }
-        setState { copy(isProcessing = true, errorMessage = null) }
+        _state.value = s.copy(isProcessing = true, errorMessage = null)
         viewModelScope.launch {
             runCatching {
-                val response = apiClient.createDonation("donor_${System.currentTimeMillis()}", state.amountRub)
-                setState {
-                    copy(
-                        isProcessing = false,
-                        qrCodeBase64 = response.qrImageBase64,
-                        orderId = response.orderId,
-                    )
-                }
+                val resp = apiClient.createDonation("donor_${System.currentTimeMillis()}", s.amountRub)
+                _state.value = _state.value.copy(
+                    isProcessing = false,
+                    qrCodeBase64 = resp.qrImageBase64,
+                    orderId = resp.orderId,
+                )
             }.onFailure { e ->
-                Timber.e(e, "Donate QR generation failed")
-                setState { copy(isProcessing = false, errorMessage = e.message) }
+                Timber.e(e, "donate QR failed")
+                _state.value = _state.value.copy(isProcessing = false, errorMessage = e.message)
             }
         }
     }
 
-    private fun handleSimulate() = withState { state ->
-        val orderId = state.orderId ?: return@withState
-        if (!SvoiConfig.DEMO_MODE) return@withState  // только в demo
+    fun simulatePayment() {
+        val orderId = _state.value.orderId ?: return
+        if (!SvoiConfig.DEMO_MODE) return
         viewModelScope.launch {
             runCatching {
                 apiClient.simulatePayment(orderId)
-                setState { copy(isCompleted = true, qrCodeBase64 = null, orderId = null) }
+                _state.value = _state.value.copy(isCompleted = true, qrCodeBase64 = null, orderId = null)
             }.onFailure { e ->
-                setState { copy(errorMessage = e.message) }
+                _state.value = _state.value.copy(errorMessage = e.message)
             }
         }
+    }
+
+    fun close() {
+        _state.value = DonateViewState()
     }
 }
