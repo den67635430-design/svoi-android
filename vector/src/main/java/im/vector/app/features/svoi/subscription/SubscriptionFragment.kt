@@ -1,5 +1,5 @@
 /*
- * СВОи Subscription — Fragment
+ * СВОи Subscription — Fragment (Hilt, без Mavericks)
  */
 package im.vector.app.features.svoi.subscription
 
@@ -9,11 +9,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import com.airbnb.mvrx.fragmentViewModel
-import com.airbnb.mvrx.withState
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import im.vector.app.databinding.FragmentSubscriptionBinding
 import im.vector.app.features.svoi.SubscriptionTier
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class SubscriptionFragment : Fragment() {
@@ -21,7 +24,7 @@ class SubscriptionFragment : Fragment() {
     private var _binding: FragmentSubscriptionBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: SubscriptionViewModel by fragmentViewModel()
+    private val viewModel: SubscriptionViewModel by viewModels()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentSubscriptionBinding.inflate(inflater, container, false)
@@ -31,27 +34,21 @@ class SubscriptionFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.tierFreeButton.setOnClickListener {
-            viewModel.handle(SubscriptionAction.SelectTier(SubscriptionTier.FREE)); render()
+        binding.tierFreeButton.setOnClickListener { viewModel.selectTier(SubscriptionTier.FREE) }
+        binding.tierPremiumButton.setOnClickListener { viewModel.selectTier(SubscriptionTier.PREMIUM) }
+        binding.tierBusinessButton.setOnClickListener { viewModel.selectTier(SubscriptionTier.BUSINESS) }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.state.collect { render(it) }
+            }
         }
-        binding.tierPremiumButton.setOnClickListener {
-            viewModel.handle(SubscriptionAction.SelectTier(SubscriptionTier.PREMIUM)); render()
-        }
-        binding.tierBusinessButton.setOnClickListener {
-            viewModel.handle(SubscriptionAction.SelectTier(SubscriptionTier.BUSINESS)); render()
-        }
-        render()
     }
 
-    override fun onResume() {
-        super.onResume()
-        render()
-    }
-
-    private fun render() = withState(viewModel) { state ->
+    private fun render(state: SubscriptionViewState) {
         binding.adminBadge.isVisible = state.isAdmin
         binding.demoBadge.isVisible = state.isDemoMode && !state.isAdmin
-        binding.currentTierLabel.text = "Current: ${state.currentTier.displayName}"
+        binding.currentTierLabel.text = "Current: " + state.currentTier.displayName
         binding.progressBar.isVisible = state.isProcessing
 
         binding.qrContainer.isVisible = state.qrCodeBase64 != null
@@ -62,7 +59,7 @@ class SubscriptionFragment : Fragment() {
         }
         binding.simulatePaymentButton.isVisible = state.orderId != null && state.isDemoMode
         binding.simulatePaymentButton.setOnClickListener {
-            state.orderId?.let { viewModel.handle(SubscriptionAction.SimulatePayment(it)); render() }
+            state.orderId?.let { viewModel.simulatePayment(it) }
         }
 
         state.errorMessage?.let { binding.errorLabel.text = it }
