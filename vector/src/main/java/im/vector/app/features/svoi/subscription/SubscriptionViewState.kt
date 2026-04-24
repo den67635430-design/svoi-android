@@ -1,9 +1,5 @@
-/*
- * СВОи Subscription — ViewState
- */
 package im.vector.app.features.svoi.subscription
 
-import com.airbnb.mvrx.MavericksState
 import im.vector.app.features.svoi.SubscriptionTier
 
 data class SubscriptionViewState(
@@ -14,4 +10,4 @@ data class SubscriptionViewState(
     val qrCodeBase64: String? = null,
     val orderId: String? = null,
     val errorMessage: String? = null,
-) : MavericksState
+)
