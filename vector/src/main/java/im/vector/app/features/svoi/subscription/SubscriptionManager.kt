@@ -1,25 +1,23 @@
 /*
- * СВОи Мессенджер — Subscription Manager
- * Проверка текущей подписки и управление upgrade
+ * СВОи Subscription Manager
  */
 package im.vector.app.features.svoi.subscription
 
 import android.content.SharedPreferences
+import im.vector.app.core.di.DefaultPreferences
 import im.vector.app.features.svoi.PremiumFeature
 import im.vector.app.features.svoi.SubscriptionTier
 import im.vector.app.features.svoi.SvoiConfig
 import javax.inject.Inject
-import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
 class SubscriptionManager @Inject constructor(
-    @Named("VectorPreferences") private val prefs: SharedPreferences,
+    @DefaultPreferences private val prefs: SharedPreferences,
 ) {
-
     fun getCurrentTier(): SubscriptionTier {
-        if (isAdmin()) return SubscriptionTier.BUSINESS  // Admin = всё доступно
-        if (SvoiConfig.DEMO_MODE) return SubscriptionTier.BUSINESS  // Demo = всё бесплатно
+        if (isAdmin()) return SubscriptionTier.BUSINESS
+        if (SvoiConfig.DEMO_MODE) return SubscriptionTier.BUSINESS
         val tierName = prefs.getString(SvoiConfig.PREF_SUBSCRIPTION_TIER, SubscriptionTier.FREE.name)
         return runCatching { SubscriptionTier.valueOf(tierName!!) }.getOrDefault(SubscriptionTier.FREE)
     }
@@ -29,9 +27,7 @@ class SubscriptionManager @Inject constructor(
         return email.equals(SvoiConfig.ADMIN_EMAIL, ignoreCase = true)
     }
 
-    fun hasAccess(feature: PremiumFeature): Boolean {
-        return getCurrentTier().hasAccess(feature)
-    }
+    fun hasAccess(feature: PremiumFeature): Boolean = getCurrentTier().hasAccess(feature)
 
     fun setUserEmail(email: String) {
         prefs.edit()
@@ -49,7 +45,6 @@ class SubscriptionManager @Inject constructor(
 
     fun isSubscriptionActive(): Boolean {
         if (isAdmin() || SvoiConfig.DEMO_MODE) return true
-        val expiresAt = prefs.getLong(SvoiConfig.PREF_SUBSCRIPTION_EXPIRES, 0L)
-        return expiresAt > System.currentTimeMillis()
+        return prefs.getLong(SvoiConfig.PREF_SUBSCRIPTION_EXPIRES, 0L) > System.currentTimeMillis()
     }
 }
