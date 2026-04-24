@@ -1,102 +1,81 @@
 /*
- * СВОи Мессенджер — Onboarding Tutorial ViewModel
+ * СВОи Tutorial — простой ViewModel (без Mavericks)
  */
 package im.vector.app.features.onboarding
 
 import android.content.SharedPreferences
-import com.airbnb.mvrx.MavericksViewModelFactory
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
-import im.vector.app.core.di.MavericksAssistedViewModelFactory
-import im.vector.app.core.di.hiltMavericksViewModelFactory
-import im.vector.app.core.platform.VectorViewModel
-import im.vector.app.core.platform.EmptyViewEvents
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 import javax.inject.Named
 
-private const val PREF_TUTORIAL_COMPLETED = "svoi_tutorial_completed"
-private const val PREF_TUTORIAL_CURRENT_STEP = "svoi_tutorial_current_step"
+private const val PREF_COMPLETED = "svoi_tutorial_completed"
+private const val PREF_STEP = "svoi_tutorial_current_step"
 
-class TutorialViewModel @AssistedInject constructor(
-    @Assisted initialState: TutorialViewState,
+@HiltViewModel
+class TutorialViewModel @Inject constructor(
     @Named("VectorPreferences") private val prefs: SharedPreferences,
-) : VectorViewModel<TutorialViewState, TutorialAction, EmptyViewEvents>(initialState) {
+) : ViewModel() {
 
-    @AssistedFactory
-    interface Factory : MavericksAssistedViewModelFactory<TutorialViewModel, TutorialViewState> {
-        override fun create(initialState: TutorialViewState): TutorialViewModel
-    }
+    private val _state = MutableStateFlow(TutorialViewState())
+    val state: StateFlow<TutorialViewState> = _state.asStateFlow()
 
-    companion object : MavericksViewModelFactory<TutorialViewModel, TutorialViewState> by hiltMavericksViewModelFactory()
+    init { load() }
 
-    init {
-        loadState()
-    }
-
-    private fun loadState() = viewModelScope.launch(Dispatchers.IO) {
-        val completed = prefs.getBoolean(PREF_TUTORIAL_COMPLETED, false)
+    private fun load() = viewModelScope.launch(Dispatchers.IO) {
+        val completed = prefs.getBoolean(PREF_COMPLETED, false)
         if (completed) {
-            setState { copy(isCompleted = true, isVisible = false) }
+            _state.value = _state.value.copy(isCompleted = true, isVisible = false)
             return@launch
         }
-        // Восстановление шага после краша
-        val stepName = prefs.getString(PREF_TUTORIAL_CURRENT_STEP, null)
+        val stepName = prefs.getString(PREF_STEP, null)
         val step = stepName?.let {
             runCatching { TutorialStep.valueOf(it) }.getOrNull()
         } ?: TutorialStep.SEARCH
-
-        setState { copy(currentStep = step, isVisible = true) }
-        Timber.d("Tutorial loaded: step=$step, completed=$completed")
+        _state.value = _state.value.copy(currentStep = step, isVisible = true)
+        Timber.d("Tutorial loaded: step=$step")
     }
 
-    override fun handle(action: TutorialAction) {
-        when (action) {
-            TutorialAction.NextStep -> handleNextStep()
-            TutorialAction.Skip -> handleSkip()
-            TutorialAction.Replay -> handleReplay()
-        }
-    }
-
-    private fun handleNextStep() = withState { state ->
-        if (state.isLastStep) {
-            completeTutorial()
+    fun nextStep() {
+        val current = _state.value
+        if (current.isLastStep) {
+            complete()
         } else {
-            val nextStep = TutorialStep.STEPS[state.stepIndex + 1]
-            setState { copy(currentStep = nextStep) }
-            saveCurrentStep(nextStep)
+            val next = TutorialStep.STEPS[current.stepIndex + 1]
+            _state.value = current.copy(currentStep = next)
+            save(next)
         }
     }
 
-    private fun handleSkip() {
-        completeTutorial()
-    }
+    fun skip() = complete()
 
-    private fun handleReplay() {
+    fun replay() {
         viewModelScope.launch(Dispatchers.IO) {
             prefs.edit()
-                .putBoolean(PREF_TUTORIAL_COMPLETED, false)
-                .putString(PREF_TUTORIAL_CURRENT_STEP, TutorialStep.SEARCH.name)
+                .putBoolean(PREF_COMPLETED, false)
+                .putString(PREF_STEP, TutorialStep.SEARCH.name)
                 .apply()
         }
-        setState { copy(currentStep = TutorialStep.SEARCH, isCompleted = false, isVisible = true) }
+        _state.value = TutorialViewState(currentStep = TutorialStep.SEARCH, isVisible = true)
     }
 
-    private fun completeTutorial() {
+    private fun complete() {
         viewModelScope.launch(Dispatchers.IO) {
-            prefs.edit()
-                .putBoolean(PREF_TUTORIAL_COMPLETED, true)
-                .remove(PREF_TUTORIAL_CURRENT_STEP)
-                .apply()
+            prefs.edit().putBoolean(PREF_COMPLETED, true).remove(PREF_STEP).apply()
         }
-        setState { copy(isCompleted = true, isVisible = false) }
+        _state.value = _state.value.copy(isCompleted = true, isVisible = false)
     }
 
-    private fun saveCurrentStep(step: TutorialStep) {
+    private fun save(step: TutorialStep) {
         viewModelScope.launch(Dispatchers.IO) {
-            prefs.edit().putString(PREF_TUTORIAL_CURRENT_STEP, step.name).apply()
+            prefs.edit().putString(PREF_STEP, step.name).apply()
         }
     }
 }
