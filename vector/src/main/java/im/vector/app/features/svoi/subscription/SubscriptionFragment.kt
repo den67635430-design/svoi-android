@@ -1,6 +1,5 @@
 /*
  * СВОи Subscription — Fragment
- * Показывает 3 уровня подписки с ценами и кнопками "Выбрать"
  */
 package im.vector.app.features.svoi.subscription
 
@@ -33,25 +32,28 @@ class SubscriptionFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.tierFreeButton.setOnClickListener {
-            viewModel.handle(SubscriptionAction.SelectTier(SubscriptionTier.FREE))
+            viewModel.handle(SubscriptionAction.SelectTier(SubscriptionTier.FREE)); render()
         }
         binding.tierPremiumButton.setOnClickListener {
-            viewModel.handle(SubscriptionAction.SelectTier(SubscriptionTier.PREMIUM))
+            viewModel.handle(SubscriptionAction.SelectTier(SubscriptionTier.PREMIUM)); render()
         }
         binding.tierBusinessButton.setOnClickListener {
-            viewModel.handle(SubscriptionAction.SelectTier(SubscriptionTier.BUSINESS))
+            viewModel.handle(SubscriptionAction.SelectTier(SubscriptionTier.BUSINESS)); render()
         }
-
-        viewModel.onEach { state -> renderState(state) }
+        render()
     }
 
-    private fun renderState(state: SubscriptionViewState) {
+    override fun onResume() {
+        super.onResume()
+        render()
+    }
+
+    private fun render() = withState(viewModel) { state ->
         binding.adminBadge.isVisible = state.isAdmin
         binding.demoBadge.isVisible = state.isDemoMode && !state.isAdmin
-        binding.currentTierLabel.text = "Текущая подписка: ${state.currentTier.displayName}"
+        binding.currentTierLabel.text = "Current: ${state.currentTier.displayName}"
         binding.progressBar.isVisible = state.isProcessing
 
-        // Показываем QR если получен
         binding.qrContainer.isVisible = state.qrCodeBase64 != null
         state.qrCodeBase64?.let { base64 ->
             val bytes = android.util.Base64.decode(base64, android.util.Base64.DEFAULT)
@@ -60,10 +62,9 @@ class SubscriptionFragment : Fragment() {
         }
         binding.simulatePaymentButton.isVisible = state.orderId != null && state.isDemoMode
         binding.simulatePaymentButton.setOnClickListener {
-            state.orderId?.let { viewModel.handle(SubscriptionAction.SimulatePayment(it)) }
+            state.orderId?.let { viewModel.handle(SubscriptionAction.SimulatePayment(it)); render() }
         }
 
-        // Ошибка
         state.errorMessage?.let { binding.errorLabel.text = it }
         binding.errorLabel.isVisible = state.errorMessage != null
     }
