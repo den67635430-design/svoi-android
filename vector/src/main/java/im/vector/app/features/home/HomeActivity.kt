@@ -77,8 +77,6 @@ import im.vector.app.features.spaces.share.ShareSpaceBottomSheet
 import im.vector.app.features.themes.ThemeUtils
 import im.vector.app.features.usercode.UserCodeActivity
 import im.vector.app.features.workers.signout.ServerBackupStatusViewModel
-import im.vector.app.features.svoi.api.SvoiApiClient
-import im.vector.app.features.svoi.updates.SvoiVersionChecker
 import im.vector.lib.core.utils.compat.getParcelableExtraCompat
 import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.Dispatchers
@@ -201,9 +199,6 @@ class HomeActivity :
         get() = views.coordinatorLayout
 
     override fun getBinding() = ActivityHomeBinding.inflate(layoutInflater)
-
-    @Inject lateinit var svoiApiClient: SvoiApiClient
-    private var svoiVersionChecker: SvoiVersionChecker? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -591,12 +586,6 @@ class HomeActivity :
 
     override fun onResume() {
         super.onResume()
-
-        // SVOI: проверка обновлений (throttled, не блокирует UI)
-        if (svoiVersionChecker == null) {
-            svoiVersionChecker = SvoiVersionChecker(this, svoiApiClient)
-        }
-        svoiVersionChecker?.checkForUpdates(lifecycleScope)
 
         if (vectorUncaughtExceptionHandler.didAppCrash()) {
             vectorUncaughtExceptionHandler.clearAppCrashStatus()
