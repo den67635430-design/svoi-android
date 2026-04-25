@@ -1,5 +1,5 @@
 /*
- * SVOI Version Checker - проверяет обновления при старте приложения.
+ * SVOI Version Checker — проверяет обновления при старте приложения.
  * При наличии новой версии показывает диалог.
  */
 package im.vector.app.features.svoi.updates
@@ -11,7 +11,6 @@ import android.content.SharedPreferences
 import android.net.Uri
 import androidx.core.content.edit
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import im.vector.app.BuildConfig
 import im.vector.app.features.svoi.api.SvoiApiClient
 import im.vector.app.features.svoi.api.VersionInfo
 import kotlinx.coroutines.CoroutineScope
@@ -36,7 +35,7 @@ class SvoiVersionChecker(
         scope.launch(Dispatchers.IO) {
             try {
                 val remote = apiClient.getAppVersion()
-                val local = BuildConfig.VERSION_NAME
+                val local = getLocalVersionName()
                 Timber.i("SVOI version check: local=%s, remote=%s", local, remote.version)
 
                 if (compareVersions(remote.version, local) > 0) {
@@ -56,6 +55,15 @@ class SvoiVersionChecker(
             } catch (e: Exception) {
                 Timber.w(e, "SVOI version check failed (non-fatal)")
             }
+        }
+    }
+
+    private fun getLocalVersionName(): String {
+        return try {
+            activity.packageManager.getPackageInfo(activity.packageName, 0).versionName ?: "1.0.0"
+        } catch (e: Exception) {
+            Timber.w(e, "Cannot read local version name")
+            "1.0.0"
         }
     }
 
