@@ -18,6 +18,9 @@ object SvoiConfig {
     // API endpoint (VPS backend)
     const val API_ENDPOINT: String = "http://svo.kodkontenta.ru:8080"
 
+    // Version check endpoint (HTTPS via nginx -> 127.0.0.1:8089)
+    const val VERSION_API_ENDPOINT: String = "https://svo.kodkontenta.ru"
+
     // SharedPreferences keys
     const val PREF_SUBSCRIPTION_TIER = "svoi_subscription_tier"
     const val PREF_SUBSCRIPTION_EXPIRES = "svoi_subscription_expires"
