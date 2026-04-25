@@ -28,6 +28,14 @@ data class SubscriptionStatusResponse(
     val expiresAt: String?,
 )
 
+data class VersionInfo(
+    val version: String,
+    val build: Int,
+    val downloadUrl: String,
+    val changelog: String,
+    val critical: Boolean,
+)
+
 @Singleton
 class SvoiApiClient @Inject constructor() {
 
@@ -77,4 +85,25 @@ class SvoiApiClient @Inject constructor() {
     suspend fun createDonation(userId: String, amountRub: Int): PaymentResponse {
         return createPayment(userId, amountRub)  // тот же эндпоинт
     }
+    suspend fun getAppVersion(): VersionInfo = withContext(Dispatchers.IO) {
+        val url = URL("${SvoiConfig.VERSION_API_ENDPOINT}/api/app-version")
+        val conn = url.openConnection() as HttpURLConnection
+        try {
+            conn.requestMethod = "GET"
+            conn.connectTimeout = 10_000
+            conn.readTimeout = 10_000
+            val response = conn.inputStream.bufferedReader().readText()
+            val json = JSONObject(response)
+            VersionInfo(
+                    version = json.optString("version", "1.0.0"),
+                    build = json.optInt("build", 0),
+                    downloadUrl = json.optString("downloadUrl", "https://kodkontenta.ru/apk/svoi.apk"),
+                    changelog = json.optString("changelog", ""),
+                    critical = json.optBoolean("critical", false),
+            )
+        } finally {
+            conn.disconnect()
+        }
+    }
+
 }
