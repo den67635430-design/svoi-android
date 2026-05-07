@@ -72,6 +72,9 @@ sealed class RoomDetailAction : VectorViewModelAction {
     data class ReRequestKeys(val eventId: String) : RoomDetailAction()
 
     object SelectStickerAttachment : RoomDetailAction()
+
+    /** SVOi: отправить стикер из собственного пикера (URL → загрузка в Synapse media → m.sticker event). */
+    data class SendSvoiSticker(val url: String, val code: String) : RoomDetailAction()
     object OpenIntegrationManager : RoomDetailAction()
     object ManageIntegrations : RoomDetailAction()
     data class AddJitsiWidget(val withVideo: Boolean) : RoomDetailAction()

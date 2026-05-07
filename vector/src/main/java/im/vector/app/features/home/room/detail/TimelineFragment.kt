@@ -380,6 +380,7 @@ class TimelineFragment :
                 is RoomDetailViewEvents.ShowE2EErrorMessage -> displayE2eError(it.withHeldCode)
                 RoomDetailViewEvents.DisplayPromptForIntegrationManager -> displayPromptForIntegrationManager()
                 is RoomDetailViewEvents.OpenStickerPicker -> openStickerPicker(it)
+                is RoomDetailViewEvents.OpenSvoiStickerPicker -> openSvoiStickerPicker(it.userId)
                 is RoomDetailViewEvents.DisplayEnableIntegrationsWarning -> displayDisabledIntegrationDialog()
                 is RoomDetailViewEvents.OpenIntegrationManager -> openIntegrationManager()
                 is RoomDetailViewEvents.OpenFile -> startOpenFileIntent(it)
@@ -609,6 +610,24 @@ class TimelineFragment :
 
     private fun openStickerPicker(event: RoomDetailViewEvents.OpenStickerPicker) {
         navigator.openStickerPicker(requireContext(), stickerActivityResultLauncher, timelineArgs.roomId, event.widget)
+    }
+
+    /** SVOi: открыть собственный пикер стикеров (BottomSheet с встроенными + пользовательскими). */
+    private fun openSvoiStickerPicker(userId: String) {
+        val picker = im.vector.app.features.svoi.stickers.SvoiStickerPicker(
+                activity = requireActivity(),
+                userId = userId,
+                scope = viewLifecycleOwner.lifecycleScope,
+        )
+        picker.show { sticker ->
+            // Отправляем m.sticker событие в комнату (HTTPS URL обрабатывается клиентом-получателем)
+            timelineViewModel.handle(
+                    im.vector.app.features.home.room.detail.RoomDetailAction.SendSvoiSticker(
+                            url = sticker.url,
+                            code = sticker.code,
+                    )
+            )
+        }
     }
 
     private fun startOpenFileIntent(action: RoomDetailViewEvents.OpenFile) {

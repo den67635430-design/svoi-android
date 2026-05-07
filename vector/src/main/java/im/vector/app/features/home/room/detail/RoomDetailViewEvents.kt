@@ -70,6 +70,9 @@ sealed class RoomDetailViewEvents : VectorViewEvents {
 
     data class OpenStickerPicker(val widget: Widget) : RoomDetailViewEvents()
 
+    /** SVOi own sticker picker (uses /api/stickers backend). */
+    data class OpenSvoiStickerPicker(val userId: String) : RoomDetailViewEvents()
+
     object OpenIntegrationManager : RoomDetailViewEvents()
     object OpenActiveWidgetBottomSheet : RoomDetailViewEvents()
     data class RequestNativeWidgetPermission(

@@ -21,6 +21,12 @@ object SvoiConfig {
     // Version check endpoint (HTTPS via nginx -> 127.0.0.1:8089)
     const val VERSION_API_ENDPOINT: String = "https://svo.kodkontenta.ru"
 
+    // Stickers API endpoint
+    const val STICKERS_API_ENDPOINT: String = "https://svo.kodkontenta.ru"
+    const val MAX_STICKER_SIZE_KB: Int = 512
+    const val MAX_FREE_STICKERS: Int = 5
+    const val MAX_PREMIUM_STICKERS: Int = 100
+
     // SharedPreferences keys
     const val PREF_SUBSCRIPTION_TIER = "svoi_subscription_tier"
     const val PREF_SUBSCRIPTION_EXPIRES = "svoi_subscription_expires"

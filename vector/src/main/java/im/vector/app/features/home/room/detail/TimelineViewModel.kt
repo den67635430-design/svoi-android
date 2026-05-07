@@ -476,6 +476,7 @@ class TimelineViewModel @AssistedInject constructor(
             is RoomDetailAction.ReRequestKeys -> handleReRequestKeys(action)
             is RoomDetailAction.TapOnFailedToDecrypt -> handleTapOnFailedToDecrypt(action)
             is RoomDetailAction.SelectStickerAttachment -> handleSelectStickerAttachment()
+            is RoomDetailAction.SendSvoiSticker -> handleSendSvoiSticker(action)
             is VoiceBroadcastAction -> handleVoiceBroadcastAction(action)
             is RoomDetailAction.OpenIntegrationManager -> handleOpenIntegrationManager()
             is RoomDetailAction.StartCall -> handleStartCall(action)
@@ -615,6 +616,27 @@ class TimelineViewModel @AssistedInject constructor(
         viewModelScope.launch {
             val viewEvent = stickerPickerActionHandler.handle()
             _viewEvents.post(viewEvent)
+        }
+    }
+
+    /** SVOi: отправляет m.sticker event со ссылкой на стикер. URL — внешний HTTPS из /var/www/stickers/. */
+    private fun handleSendSvoiSticker(action: RoomDetailAction.SendSvoiSticker) {
+        val r = room ?: return
+        viewModelScope.launch {
+            try {
+                val content: Map<String, Any> = mapOf(
+                        "url" to action.url,
+                        "body" to action.code,
+                        "info" to mapOf(
+                                "mimetype" to "image/png",
+                                "w" to 256,
+                                "h" to 256,
+                        ),
+                )
+                r.sendService().sendEvent(EventType.STICKER, content.toContent())
+            } catch (e: Throwable) {
+                Timber.w(e, "SVOi sticker send failed")
+            }
         }
     }
 
