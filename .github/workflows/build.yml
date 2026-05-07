@@ -50,7 +50,7 @@ jobs:
             vector-app/build/outputs/apk/*/debug/*.apk
 
   release:
-    name: Build unsigned GPlay APKs
+    name: Build signed GPlay release APKs (SVOi)
     runs-on: ubuntu-latest
     concurrency:
       group: ${{ github.ref == 'refs/head/main' && format('build-release-apk-main-{0}', github.sha) || github.ref == 'refs/heads/develop' && format('build-release-apk-develop-{0}', github.sha) || format('build-debug-{0}', github.ref)  }}
@@ -70,24 +70,36 @@ jobs:
         uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/develop' }}
-      - name: Assemble GPlay unsigned apk
+      - name: Decode SVOi release keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.SVOI_RELEASE_KEYSTORE_B64 }}
+        run: |
+          mkdir -p $HOME/.svoi
+          echo "$KEYSTORE_B64" | base64 -d > $HOME/.svoi/release.jks
+          ls -la $HOME/.svoi/release.jks
+      - name: Assemble GPlay signed release apk
+        env:
+          SVOI_RELEASE_KEYSTORE_PATH: ${{ env.HOME }}/.svoi/release.jks
+          SVOI_RELEASE_KEYSTORE_PASSWORD: ${{ secrets.SVOI_RELEASE_KEYSTORE_PASSWORD }}
+          SVOI_RELEASE_KEY_ALIAS: ${{ secrets.SVOI_RELEASE_KEY_ALIAS }}
         run: ./gradlew clean assembleGplayRelease $CI_GRADLE_ARG_PROPERTIES
-      - name: Upload Gplay unsigned APKs
+      - name: Upload Gplay signed release APKs
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
-          name: vector-gplay-release-unsigned
+          name: vector-gplay-release-signed
           path: |
             vector-app/build/outputs/apk/*/release/*.apk
 
   exodus:
     runs-on: ubuntu-latest
     needs: release
+    continue-on-error: true  # SVOi: privacy check informational only, не блокировать сборку
     steps:
       - name: Obtain apk from artifact
         id: download
         uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
         with:
-          name: vector-gplay-release-unsigned
+          name: vector-gplay-release-signed
       - name: Show apks in artifact
         run: ls -R ${STEPS_DOWNLOAD_OUTPUTS_DOWNLOAD_PATH}
         env:
@@ -96,7 +108,7 @@ jobs:
         uses: docker://exodusprivacy/exodus-standalone:latest
         with:
           # Don't fail when finding trackers so they can be reported later
-          args: /github/workspace/gplay/release/vector-gplay-universal-release-unsigned.apk -j -o /github/workspace/exodus.json -e 0
+          args: /github/workspace/gplay/release/vector-gplay-universal-release.apk -j -o /github/workspace/exodus.json -e 0
       - name: Upload exodus json report
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:

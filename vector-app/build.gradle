@@ -236,10 +236,12 @@ android {
             storePassword System.env.ELEMENT_ANDROID_NIGHTLY_STOREPASSWORD ?: project.property("signing.element.nightly.storePassword")
         }
         release {
-            keyAlias project.property("signing.element.keyId")
-            keyPassword project.property("signing.element.keyPassword")
-            storeFile file(project.property("signing.element.storePath"))
-            storePassword project.property("signing.element.storePassword")
+            // SVOi: используем env переменные из GitHub Actions, c fallback на project properties
+            def storeFilePath = System.env.SVOI_RELEASE_KEYSTORE_PATH ?: project.findProperty("signing.element.storePath")
+            keyAlias = System.env.SVOI_RELEASE_KEY_ALIAS ?: project.findProperty("signing.element.keyId") ?: "svoi-release"
+            keyPassword = System.env.SVOI_RELEASE_KEYSTORE_PASSWORD ?: project.findProperty("signing.element.keyPassword")
+            storeFile = storeFilePath ? file(storeFilePath) : null
+            storePassword = System.env.SVOI_RELEASE_KEYSTORE_PASSWORD ?: project.findProperty("signing.element.storePassword")
         }
     }
 
@@ -265,7 +267,10 @@ android {
                 optimizeCode true
                 proguardFiles 'proguard-rules.pro'
             }
-            // signingConfig signingConfigs.release
+            // SVOi: подписывать release APK ключом из GitHub Secrets (если задан)
+            if (System.env.SVOI_RELEASE_KEYSTORE_PATH) {
+                signingConfig signingConfigs.release
+            }
         }
 
         nightly {
