@@ -52,7 +52,7 @@ class SvoiStickerApi {
                                 id = s.getString("id"),
                                 code = s.getString("code"),
                                 url = s.getString("url"),
-                                category = s.optString("category", null),
+                                category = if (s.has("category")) s.optString("category") else null,
                                 isUserSticker = false,
                         )
                 )

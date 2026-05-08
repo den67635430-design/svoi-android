@@ -74,12 +74,11 @@ jobs:
         env:
           KEYSTORE_B64: ${{ secrets.SVOI_RELEASE_KEYSTORE_B64 }}
         run: |
-          mkdir -p $HOME/.svoi
-          echo "$KEYSTORE_B64" | base64 -d > $HOME/.svoi/release.jks
-          ls -la $HOME/.svoi/release.jks
+          echo "$KEYSTORE_B64" | base64 -d > /tmp/svoi-release.jks
+          ls -la /tmp/svoi-release.jks
       - name: Assemble GPlay signed release apk
         env:
-          SVOI_RELEASE_KEYSTORE_PATH: ${{ env.HOME }}/.svoi/release.jks
+          SVOI_RELEASE_KEYSTORE_PATH: /tmp/svoi-release.jks
           SVOI_RELEASE_KEYSTORE_PASSWORD: ${{ secrets.SVOI_RELEASE_KEYSTORE_PASSWORD }}
           SVOI_RELEASE_KEY_ALIAS: ${{ secrets.SVOI_RELEASE_KEY_ALIAS }}
         run: ./gradlew clean assembleGplayRelease $CI_GRADLE_ARG_PROPERTIES
