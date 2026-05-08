@@ -14,10 +14,12 @@ import javax.inject.Singleton
 @Singleton
 class SubscriptionManager @Inject constructor(
     @DefaultPreferences private val prefs: SharedPreferences,
+    private val testModeManager: TestModeManager,
 ) {
     fun getCurrentTier(): SubscriptionTier {
         if (isAdmin()) return SubscriptionTier.BUSINESS
-        if (SvoiConfig.DEMO_MODE) return SubscriptionTier.BUSINESS
+        // SVOi: runtime-флаг из API (admin может toggle) заменяет compile-time SvoiConfig.DEMO_MODE
+        if (testModeManager.isEnabled()) return SubscriptionTier.BUSINESS
         val tierName = prefs.getString(SvoiConfig.PREF_SUBSCRIPTION_TIER, SubscriptionTier.FREE.name)
         return runCatching { SubscriptionTier.valueOf(tierName!!) }.getOrDefault(SubscriptionTier.FREE)
     }
@@ -44,7 +46,7 @@ class SubscriptionManager @Inject constructor(
     }
 
     fun isSubscriptionActive(): Boolean {
-        if (isAdmin() || SvoiConfig.DEMO_MODE) return true
+        if (isAdmin() || testModeManager.isEnabled()) return true
         return prefs.getLong(SvoiConfig.PREF_SUBSCRIPTION_EXPIRES, 0L) > System.currentTimeMillis()
     }
 }

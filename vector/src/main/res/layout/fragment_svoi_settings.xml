@@ -77,6 +77,43 @@
                 android:layout_marginTop="6dp"/>
         </LinearLayout>
 
+        <!-- SVOi Admin: Тестовый режим (только для администраторов) -->
+        <LinearLayout
+            android:id="@+id/adminTestModeBlock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#2A1F00"
+            android:padding="20dp"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🛠 Админ: Тестовый режим"
+                android:textColor="#FFD700"
+                android:textSize="20sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/testModeStatusLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#CCCCCC"
+                android:layout_marginTop="6dp"
+                tools:text="Сейчас: ВКЛ — все платные функции бесплатны"/>
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/adminTestModeSwitch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Тестовый режим (бесплатные платные функции)"
+                android:textColor="#FFFFFF"
+                android:layout_marginTop="12dp"/>
+        </LinearLayout>
+
         <LinearLayout
             android:id="@+id/buttonDonate"
             android:layout_width="match_parent"
