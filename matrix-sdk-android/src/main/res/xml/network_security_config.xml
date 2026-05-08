@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
     <!-- Ref: https://developer.android.com/training/articles/security-config.html -->
-    <!-- By default, do not allow clearText traffic -->
-    <base-config cleartextTrafficPermitted="false" />
+    <!-- SVOi: разрешить user CAs (для VPN/антивирусов/корпоративных прокси) -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
 
     <!-- Allow clearText traffic on some specified host -->
     <domain-config cleartextTrafficPermitted="true">
