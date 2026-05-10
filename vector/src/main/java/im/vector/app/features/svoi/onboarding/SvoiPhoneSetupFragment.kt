@@ -5,8 +5,11 @@
  */
 package im.vector.app.features.svoi.onboarding
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -103,6 +106,28 @@ class SvoiPhoneSetupFragment : Fragment() {
                 .putBoolean(prefKey(session.myUserId), true)
                 .putBoolean(prefKey(session.myUserId) + "_skipped", skipped)
                 .apply()
+        // Запросить permission и сразу импортировать контакты
+        if (!skipped) requestContactsPermission()
+    }
+
+    private fun requestContactsPermission() {
+        val ctx = requireContext()
+        if (androidx.core.content.ContextCompat.checkSelfPermission(ctx, Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(Manifest.permission.READ_CONTACTS), REQ_CONTACTS)
+        }
+    }
+
+    @Deprecated("onRequestPermissionsResult is deprecated in fragment but works for our simple use case")
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQ_CONTACTS && grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
+            // Permission получено — Element Android при первом импорте контактов сам прочитает книгу
+            // Tост юзеру что всё ок
+            Toast.makeText(requireContext(),
+                    "Контакты подключены. В разделе 'Новый чат' будут видны ваши друзья из СВОи.",
+                    Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun setBusy(busy: Boolean) {
@@ -124,6 +149,7 @@ class SvoiPhoneSetupFragment : Fragment() {
 
     companion object {
         private const val PREFS_NAME = "svoi_onboarding"
+        private const val REQ_CONTACTS = 4711
         private fun prefKey(userId: String) = "phone_setup_done_$userId"
 
         fun newInstance() = SvoiPhoneSetupFragment()
