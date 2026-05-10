@@ -27,11 +27,7 @@ class SvoiVersionChecker(
     private val prefs: SharedPreferences = activity.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     fun checkForUpdates(scope: CoroutineScope) {
-        if (!shouldCheckNow()) {
-            Timber.d("SVOI update check skipped (throttled)")
-            return
-        }
-
+        // SVOi: убрали throttle — проверяем при каждом onResume (запрос лёгкий, ~50ms)
         scope.launch(Dispatchers.IO) {
             try {
                 val remote = apiClient.getAppVersion()
@@ -39,19 +35,13 @@ class SvoiVersionChecker(
                 Timber.i("SVOI version check: local=%s, remote=%s", local, remote.version)
 
                 if (compareVersions(remote.version, local) > 0) {
-                    val skipped = prefs.getString(KEY_SKIPPED_VERSION, null)
-                    if (!remote.critical && skipped == remote.version) {
-                        Timber.d("SVOI update %s skipped by user", remote.version)
-                        prefs.edit { putLong(KEY_LAST_CHECK, System.currentTimeMillis()) }
-                        return@launch
-                    }
+                    // SVOi: skipped_version игнорируем — каждый раз показываем диалог если есть новая версия
                     withContext(Dispatchers.Main) {
                         if (!activity.isFinishing && !activity.isDestroyed) {
                             showUpdateDialog(remote)
                         }
                     }
                 }
-                prefs.edit { putLong(KEY_LAST_CHECK, System.currentTimeMillis()) }
             } catch (e: Exception) {
                 Timber.w(e, "SVOI version check failed (non-fatal)")
             }
