@@ -101,13 +101,64 @@ class SvoiVersionChecker(
     }
 
     private fun openDownloadUrl(url: String) {
+        // SVOi: качаем APK через DownloadManager и сразу открываем installer (вместо браузера)
         try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            val ctx = activity.applicationContext
+            val dm = ctx.getSystemService(Context.DOWNLOAD_SERVICE) as android.app.DownloadManager
+            val downloadsDir = java.io.File(ctx.getExternalFilesDir(null), "downloads").apply { mkdirs() }
+            val target = java.io.File(downloadsDir, "svoi-update.apk")
+            if (target.exists()) target.delete()
+
+            val req = android.app.DownloadManager.Request(Uri.parse(url))
+                    .setTitle("СВОи — обновление")
+                    .setDescription("Скачивание новой версии…")
+                    .setNotificationVisibility(android.app.DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                    .setDestinationUri(Uri.fromFile(target))
+                    .setMimeType("application/vnd.android.package-archive")
+
+            val downloadId = dm.enqueue(req)
+
+            // Слушаем завершение скачивания и запускаем установщик
+            val receiver = object : android.content.BroadcastReceiver() {
+                override fun onReceive(c: Context, intent: Intent) {
+                    val id = intent.getLongExtra(android.app.DownloadManager.EXTRA_DOWNLOAD_ID, -1L)
+                    if (id != downloadId) return
+                    runCatching { c.unregisterReceiver(this) }
+                    if (target.exists()) startInstall(target)
+                    else Timber.w("SVOi: APK не скачался: %s", target.absolutePath)
+                }
+            }
+            val filter = android.content.IntentFilter(android.app.DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                ctx.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED)
+            } else {
+                @Suppress("UnspecifiedRegisterReceiverFlag")
+                ctx.registerReceiver(receiver, filter)
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "DownloadManager failed, fallback to browser")
+            try {
+                activity.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                })
+            } catch (e2: Exception) {
+                Timber.e(e2, "Even browser fallback failed")
+            }
+        }
+    }
+
+    private fun startInstall(apkFile: java.io.File) {
+        try {
+            val ctx = activity.applicationContext
+            val authority = "${ctx.packageName}.svoifileprovider"
+            val uri = androidx.core.content.FileProvider.getUriForFile(ctx, authority, apkFile)
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "application/vnd.android.package-archive")
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
             activity.startActivity(intent)
         } catch (e: Exception) {
-            Timber.e(e, "Cannot open download URL: %s", url)
+            Timber.e(e, "startInstall failed")
         }
     }
 
