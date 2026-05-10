@@ -417,6 +417,14 @@
             android:foregroundServiceType="mediaProjection"
             tools:targetApi="Q" />
 
+        <!-- SVOi: Jitsi Meet ongoing conference service для screen share в видеозвонках -->
+        <service
+            android:name="org.jitsi.meet.sdk.JitsiMeetOngoingConferenceService"
+            android:exported="false"
+            android:foregroundServiceType="mediaProjection|microphone|camera"
+            tools:replace="android:foregroundServiceType"
+            tools:targetApi="Q" />
+
         <service
             android:name=".features.call.audio.MicrophoneAccessService"
             android:exported="false"
