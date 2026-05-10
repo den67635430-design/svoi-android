@@ -422,7 +422,6 @@
             android:name="org.jitsi.meet.sdk.JitsiMeetOngoingConferenceService"
             android:exported="false"
             android:foregroundServiceType="mediaProjection|microphone|camera"
-            tools:replace="android:foregroundServiceType"
             tools:targetApi="Q" />
 
         <service

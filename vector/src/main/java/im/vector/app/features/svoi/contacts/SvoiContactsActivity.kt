@@ -78,16 +78,12 @@ class SvoiContactsActivity : AppCompatActivity() {
             this, Manifest.permission.READ_CONTACTS
     ) == PackageManager.PERMISSION_GRANTED
 
-    private fun requestContactsPermission() {
-        requestPermissions(arrayOf(Manifest.permission.READ_CONTACTS), REQ_CONTACTS)
-    }
+    private val permLauncher = registerForActivityResult(
+            androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+    ) { granted -> if (granted) loadContacts() }
 
-    @Deprecated("kept simple")
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQ_CONTACTS && grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
-            loadContacts()
-        }
+    private fun requestContactsPermission() {
+        permLauncher.launch(Manifest.permission.READ_CONTACTS)
     }
 
     private fun showPermissionRequest() {
@@ -208,7 +204,6 @@ class SvoiContactsActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val REQ_CONTACTS = 4712
         fun getIntent(ctx: android.content.Context) = Intent(ctx, SvoiContactsActivity::class.java)
     }
 }

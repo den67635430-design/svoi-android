@@ -20,6 +20,8 @@ import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -40,6 +42,16 @@ class SvoiPhoneSetupFragment : Fragment() {
     private lateinit var skipButton: Button
     private lateinit var errorLabel: TextView
     private lateinit var progressBar: ProgressBar
+
+    private val contactsPermLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            Toast.makeText(requireContext(),
+                    "Контакты подключены. Ищем ваших друзей в СВОи…",
+                    Toast.LENGTH_LONG).show()
+        }
+    }
 
     interface Listener { fun onPhoneSetupComplete() }
     private var listener: Listener? = null
@@ -106,27 +118,14 @@ class SvoiPhoneSetupFragment : Fragment() {
                 .putBoolean(prefKey(session.myUserId), true)
                 .putBoolean(prefKey(session.myUserId) + "_skipped", skipped)
                 .apply()
-        // Запросить permission и сразу импортировать контакты
         if (!skipped) requestContactsPermission()
     }
 
     private fun requestContactsPermission() {
         val ctx = requireContext()
-        if (androidx.core.content.ContextCompat.checkSelfPermission(ctx, Manifest.permission.READ_CONTACTS)
+        if (ContextCompat.checkSelfPermission(ctx, Manifest.permission.READ_CONTACTS)
                 != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(arrayOf(Manifest.permission.READ_CONTACTS), REQ_CONTACTS)
-        }
-    }
-
-    @Deprecated("onRequestPermissionsResult is deprecated in fragment but works for our simple use case")
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQ_CONTACTS && grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
-            // Permission получено — Element Android при первом импорте контактов сам прочитает книгу
-            // Tост юзеру что всё ок
-            Toast.makeText(requireContext(),
-                    "Контакты подключены. В разделе 'Новый чат' будут видны ваши друзья из СВОи.",
-                    Toast.LENGTH_LONG).show()
+            contactsPermLauncher.launch(Manifest.permission.READ_CONTACTS)
         }
     }
 
@@ -149,12 +148,10 @@ class SvoiPhoneSetupFragment : Fragment() {
 
     companion object {
         private const val PREFS_NAME = "svoi_onboarding"
-        private const val REQ_CONTACTS = 4711
         private fun prefKey(userId: String) = "phone_setup_done_$userId"
 
         fun newInstance() = SvoiPhoneSetupFragment()
 
-        /** Был ли уже показан экран phone setup для этого юзера. */
         fun isCompleted(context: Context, userId: String): Boolean =
                 context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                         .getBoolean(prefKey(userId), false)
