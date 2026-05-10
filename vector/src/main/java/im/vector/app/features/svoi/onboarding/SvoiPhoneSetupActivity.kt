@@ -4,6 +4,7 @@
 package im.vector.app.features.svoi.onboarding
 
 import android.os.Bundle
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import dagger.hilt.android.AndroidEntryPoint
 import im.vector.app.R
@@ -13,20 +14,19 @@ class SvoiPhoneSetupActivity : AppCompatActivity(), SvoiPhoneSetupFragment.Liste
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Используем готовый контейнер simple_fragment если есть — иначе создаём программно
         setContentView(R.layout.activity_svoi_phone_setup)
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                     .replace(R.id.svoiPhoneSetupContainer, SvoiPhoneSetupFragment.newInstance())
                     .commit()
         }
+        // Не даём закрыть экран кнопкой Назад — нужен setup или "Пропустить"
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() { /* swallow */ }
+        })
     }
 
     override fun onPhoneSetupComplete() {
         finish()
-    }
-
-    override fun onBackPressed() {
-        // Не даём закрыть экран кнопкой Назад — должен пройти setup или нажать "Пропустить"
     }
 }
