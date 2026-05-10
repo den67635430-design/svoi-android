@@ -206,6 +206,15 @@ class HomeActivity :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // SVOi: показать экран ввода телефона для синхронизации контактов (один раз после регистрации)
+        if (savedInstanceState == null) {
+            val session = activeSessionHolder.getSafeActiveSession()
+            if (session != null && !im.vector.app.features.svoi.onboarding.SvoiPhoneSetupFragment.isCompleted(this, session.myUserId)) {
+                startActivity(android.content.Intent(this, im.vector.app.features.svoi.onboarding.SvoiPhoneSetupActivity::class.java))
+            }
+        }
+
         isNewAppLayoutEnabled = vectorPreferences.isNewAppLayoutEnabled()
         analyticsScreenName = MobileScreen.ScreenName.Home
         supportFragmentManager.registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false)

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#121212"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="40dp"/>
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_dialog_info"
+            android:tint="#4CAF50"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Введите ваш номер телефона"
+            android:textColor="#FFFFFF"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginTop="20dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Чтобы друзья из вашей телефонной книги могли вас найти в СВОи"
+            android:textColor="#CCCCCC"
+            android:textSize="15sp"
+            android:gravity="center"
+            android:layout_marginTop="12dp"/>
+
+        <EditText
+            android:id="@+id/phoneInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="+7 999 123 45 67"
+            android:textColorHint="#888"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:inputType="phone"
+            android:textAlignment="center"
+            android:background="#1E1E1E"
+            android:padding="16dp"
+            android:layout_marginTop="32dp"/>
+
+        <TextView
+            android:id="@+id/errorLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#F44336"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"
+            tools:text="Ошибка"
+            tools:visibility="visible"/>
+
+        <Button
+            android:id="@+id/saveButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Сохранить и продолжить"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:background="#4CAF50"
+            android:padding="16dp"
+            android:layout_marginTop="24dp"/>
+
+        <Button
+            android:id="@+id/skipButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Пропустить (друзья не смогут вас найти автоматически)"
+            android:textColor="#888"
+            android:textSize="13sp"
+            android:background="@android:color/transparent"
+            android:layout_marginTop="12dp"/>
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"
+            tools:visibility="visible"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🔒 Номер виден только друзьям из вашей телефонной книги. Никто другой его не увидит."
+            android:textColor="#666"
+            android:textSize="12sp"
+            android:gravity="center"
+            android:layout_marginTop="32dp"/>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>
