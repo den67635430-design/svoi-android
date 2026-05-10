@@ -139,6 +139,38 @@ class HomeActivity :
     @Inject lateinit var svoiApiClient: SvoiApiClient
     private var svoiVersionChecker: SvoiVersionChecker? = null
 
+    /** SVOi: добавить кнопку Админ-панель если текущий юзер — админ. */
+    private fun addSvoiAdminFabIfAdmin(userId: String) {
+        if (userId !in SVOI_ADMIN_IDS) return
+        val rootView = findViewById<android.view.ViewGroup>(android.R.id.content) ?: return
+        // Не дублируем
+        if (rootView.findViewWithTag<android.view.View>("svoi_admin_fab") != null) return
+
+        val btn = android.widget.TextView(this).apply {
+            tag = "svoi_admin_fab"
+            text = "🛠"
+            textSize = 22f
+            gravity = android.view.Gravity.CENTER
+            setTextColor(android.graphics.Color.BLACK)
+            setBackgroundColor(android.graphics.Color.parseColor("#FFD700"))
+            isClickable = true
+            isFocusable = true
+            elevation = 12f
+            setOnClickListener {
+                startActivity(im.vector.app.features.svoi.settings.SvoiSettingsActivity.getIntent(this@HomeActivity))
+            }
+        }
+        val density = resources.displayMetrics.density
+        val sizePx = (56 * density).toInt()
+        val marginPx = (16 * density).toInt()
+        val params = android.widget.FrameLayout.LayoutParams(sizePx, sizePx).apply {
+            gravity = android.view.Gravity.BOTTOM or android.view.Gravity.END
+            setMargins(0, 0, marginPx, marginPx + (80 * density).toInt())
+        }
+        rootView.addView(btn, params)
+    }
+
+
     private var isNewAppLayoutEnabled: Boolean = false // delete once old app layout is removed
 
     private val createSpaceResultLauncher = registerStartForActivityResult { activityResult ->
@@ -221,6 +253,8 @@ class HomeActivity :
                         startActivity(im.vector.app.features.svoi.contacts.SvoiContactsActivity.getIntent(this))
                     }
                 }
+                // SVOi: для админа добавить FAB-кнопку '🛠 Админ'
+                addSvoiAdminFabIfAdmin(session.myUserId)
             }
         }
 
@@ -760,6 +794,11 @@ class HomeActivity :
     }
 
     companion object {
+        private val SVOI_ADMIN_IDS = setOf(
+                "@denis:svo.kodkontenta.ru",
+                "@admin:svo.kodkontenta.ru",
+        )
+
         fun newIntent(
                 context: Context,
                 firstStartMainActivity: Boolean,
