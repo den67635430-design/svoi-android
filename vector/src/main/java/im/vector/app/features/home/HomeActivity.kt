@@ -207,11 +207,20 @@ class HomeActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // SVOi: показать экран ввода телефона для синхронизации контактов (один раз после регистрации)
+        // SVOi: один раз после регистрации показать phone setup, затем экран контактов
         if (savedInstanceState == null) {
             val session = activeSessionHolder.getSafeActiveSession()
-            if (session != null && !im.vector.app.features.svoi.onboarding.SvoiPhoneSetupFragment.isCompleted(this, session.myUserId)) {
-                startActivity(android.content.Intent(this, im.vector.app.features.svoi.onboarding.SvoiPhoneSetupActivity::class.java))
+            if (session != null) {
+                if (!im.vector.app.features.svoi.onboarding.SvoiPhoneSetupFragment.isCompleted(this, session.myUserId)) {
+                    startActivity(android.content.Intent(this, im.vector.app.features.svoi.onboarding.SvoiPhoneSetupActivity::class.java))
+                } else {
+                    val contactsShownKey = "svoi_contacts_first_shown_${session.myUserId}"
+                    val prefs = getSharedPreferences("svoi_onboarding", android.content.Context.MODE_PRIVATE)
+                    if (!prefs.getBoolean(contactsShownKey, false)) {
+                        prefs.edit().putBoolean(contactsShownKey, true).apply()
+                        startActivity(im.vector.app.features.svoi.contacts.SvoiContactsActivity.getIntent(this))
+                    }
+                }
             }
         }
 
