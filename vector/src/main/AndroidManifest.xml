@@ -256,6 +256,16 @@
                     android:scheme="element" />
 
             </intent-filter>
+
+            <!-- SVOi: автоматическая обработка ссылок на наш сервер (App Links) -->
+            <!-- Подтверждено через https://svo.kodkontenta.ru/.well-known/assetlinks.json -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" />
+                <data android:host="svo.kodkontenta.ru" />
+            </intent-filter>
         </activity-alias>
 
         <!-- exported="true" is required for the share functionality-->
