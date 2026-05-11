@@ -166,8 +166,8 @@ class HomeActivity :
             val marginPx = (16 * density).toInt()
             val params = android.widget.FrameLayout.LayoutParams(sizePx, sizePx).apply {
                 gravity = android.view.Gravity.BOTTOM or android.view.Gravity.END
-                // Чуть выше админ-FAB чтобы они не накладывались
-                setMargins(0, 0, marginPx, marginPx + (160 * density).toInt())
+                // Стандартное место FAB
+                setMargins(0, 0, marginPx, marginPx + (80 * density).toInt())
             }
             rootView.addView(btn, params)
         } catch (e: Throwable) {
@@ -175,39 +175,36 @@ class HomeActivity :
         }
     }
 
-    /** SVOi: добавить кнопку Админ-панель если текущий юзер — админ. */
-    private fun addSvoiAdminFabIfAdmin(userId: String) {
+    /** SVOi: для админа — долгий тап на собственном аватаре в шапке открывает админ-настройки. */
+    private fun installAdminLongPressIfAdmin(userId: String) {
         try {
             if (userId !in SVOI_ADMIN_IDS) return
-            val rootView = findViewById<android.view.ViewGroup>(android.R.id.content) ?: return
-            if (rootView.findViewWithTag<android.view.View>("svoi_admin_fab") != null) return
+            // Используем post чтобы дать ViewBinding отрисоваться. Ищем все ImageView в шапке.
+            findViewById<android.view.View>(android.R.id.content)?.post {
+                attachLongPressToAvatar(findViewById<android.view.View>(android.R.id.content))
+            }
+        } catch (e: Throwable) {
+            timber.log.Timber.e(e, "SVOi admin long-press install failed (non-fatal)")
+        }
+    }
 
-            val btn = android.widget.TextView(this).apply {
-                tag = "svoi_admin_fab"
-                text = "🛠"
-                textSize = 22f
-                gravity = android.view.Gravity.CENTER
-                setTextColor(android.graphics.Color.BLACK)
-                setBackgroundColor(android.graphics.Color.parseColor("#FFD700"))
-                isClickable = true
-                isFocusable = true
-                elevation = 12f
-                setOnClickListener {
-                    runCatching {
-                        startActivity(im.vector.app.features.svoi.settings.SvoiSettingsActivity.getIntent(this@HomeActivity))
+    private fun attachLongPressToAvatar(root: android.view.View?) {
+        if (root == null) return
+        when (root) {
+            is android.widget.ImageView -> {
+                val desc = root.contentDescription?.toString().orEmpty().lowercase()
+                if (desc.contains("avatar") || desc.contains("аватар") || desc.contains("profile") || desc.contains("профил")) {
+                    root.setOnLongClickListener {
+                        runCatching {
+                            startActivity(im.vector.app.features.svoi.settings.SvoiSettingsActivity.getIntent(this@HomeActivity))
+                        }
+                        true
                     }
                 }
             }
-            val density = resources.displayMetrics.density
-            val sizePx = (56 * density).toInt()
-            val marginPx = (16 * density).toInt()
-            val params = android.widget.FrameLayout.LayoutParams(sizePx, sizePx).apply {
-                gravity = android.view.Gravity.BOTTOM or android.view.Gravity.END
-                setMargins(0, 0, marginPx, marginPx + (80 * density).toInt())
+            is android.view.ViewGroup -> {
+                for (i in 0 until root.childCount) attachLongPressToAvatar(root.getChildAt(i))
             }
-            rootView.addView(btn, params)
-        } catch (e: Throwable) {
-            timber.log.Timber.e(e, "SVOi admin FAB add failed (non-fatal)")
         }
     }
 
@@ -295,8 +292,10 @@ class HomeActivity :
                             startActivity(im.vector.app.features.svoi.contacts.SvoiContactsActivity.getIntent(this))
                         }
                     }
-                    addSvoiAdminFabIfAdmin(session.myUserId)
+                    // SVOi: только зелёная FAB "Контакты". Админ-настройки доступны
+                    // через долгий тап на собственном аватаре (см. installAdminLongPress)
                     addSvoiContactsFab()
+                    installAdminLongPressIfAdmin(session.myUserId)
                 }
             } catch (e: Throwable) {
                 timber.log.Timber.e(e, "SVOi onboarding hook failed (non-fatal)")
