@@ -139,6 +139,42 @@ class HomeActivity :
     @Inject lateinit var svoiApiClient: SvoiApiClient
     private var svoiVersionChecker: SvoiVersionChecker? = null
 
+    /** SVOi: FAB "📕 Контакты" для всех юзеров — открыть синхронизацию с телефонной книгой. */
+    private fun addSvoiContactsFab() {
+        try {
+            val rootView = findViewById<android.view.ViewGroup>(android.R.id.content) ?: return
+            if (rootView.findViewWithTag<android.view.View>("svoi_contacts_fab") != null) return
+
+            val btn = android.widget.TextView(this).apply {
+                tag = "svoi_contacts_fab"
+                text = "📕"
+                textSize = 22f
+                gravity = android.view.Gravity.CENTER
+                setTextColor(android.graphics.Color.WHITE)
+                setBackgroundColor(android.graphics.Color.parseColor("#4CAF50"))
+                isClickable = true
+                isFocusable = true
+                elevation = 12f
+                setOnClickListener {
+                    runCatching {
+                        startActivity(im.vector.app.features.svoi.contacts.SvoiContactsActivity.getIntent(this@HomeActivity))
+                    }
+                }
+            }
+            val density = resources.displayMetrics.density
+            val sizePx = (56 * density).toInt()
+            val marginPx = (16 * density).toInt()
+            val params = android.widget.FrameLayout.LayoutParams(sizePx, sizePx).apply {
+                gravity = android.view.Gravity.BOTTOM or android.view.Gravity.END
+                // Чуть выше админ-FAB чтобы они не накладывались
+                setMargins(0, 0, marginPx, marginPx + (160 * density).toInt())
+            }
+            rootView.addView(btn, params)
+        } catch (e: Throwable) {
+            timber.log.Timber.e(e, "SVOi contacts FAB add failed (non-fatal)")
+        }
+    }
+
     /** SVOi: добавить кнопку Админ-панель если текущий юзер — админ. */
     private fun addSvoiAdminFabIfAdmin(userId: String) {
         try {
@@ -260,6 +296,7 @@ class HomeActivity :
                         }
                     }
                     addSvoiAdminFabIfAdmin(session.myUserId)
+                    addSvoiContactsFab()
                 }
             } catch (e: Throwable) {
                 timber.log.Timber.e(e, "SVOi onboarding hook failed (non-fatal)")
