@@ -141,33 +141,38 @@ class HomeActivity :
 
     /** SVOi: добавить кнопку Админ-панель если текущий юзер — админ. */
     private fun addSvoiAdminFabIfAdmin(userId: String) {
-        if (userId !in SVOI_ADMIN_IDS) return
-        val rootView = findViewById<android.view.ViewGroup>(android.R.id.content) ?: return
-        // Не дублируем
-        if (rootView.findViewWithTag<android.view.View>("svoi_admin_fab") != null) return
+        try {
+            if (userId !in SVOI_ADMIN_IDS) return
+            val rootView = findViewById<android.view.ViewGroup>(android.R.id.content) ?: return
+            if (rootView.findViewWithTag<android.view.View>("svoi_admin_fab") != null) return
 
-        val btn = android.widget.TextView(this).apply {
-            tag = "svoi_admin_fab"
-            text = "🛠"
-            textSize = 22f
-            gravity = android.view.Gravity.CENTER
-            setTextColor(android.graphics.Color.BLACK)
-            setBackgroundColor(android.graphics.Color.parseColor("#FFD700"))
-            isClickable = true
-            isFocusable = true
-            elevation = 12f
-            setOnClickListener {
-                startActivity(im.vector.app.features.svoi.settings.SvoiSettingsActivity.getIntent(this@HomeActivity))
+            val btn = android.widget.TextView(this).apply {
+                tag = "svoi_admin_fab"
+                text = "🛠"
+                textSize = 22f
+                gravity = android.view.Gravity.CENTER
+                setTextColor(android.graphics.Color.BLACK)
+                setBackgroundColor(android.graphics.Color.parseColor("#FFD700"))
+                isClickable = true
+                isFocusable = true
+                elevation = 12f
+                setOnClickListener {
+                    runCatching {
+                        startActivity(im.vector.app.features.svoi.settings.SvoiSettingsActivity.getIntent(this@HomeActivity))
+                    }
+                }
             }
+            val density = resources.displayMetrics.density
+            val sizePx = (56 * density).toInt()
+            val marginPx = (16 * density).toInt()
+            val params = android.widget.FrameLayout.LayoutParams(sizePx, sizePx).apply {
+                gravity = android.view.Gravity.BOTTOM or android.view.Gravity.END
+                setMargins(0, 0, marginPx, marginPx + (80 * density).toInt())
+            }
+            rootView.addView(btn, params)
+        } catch (e: Throwable) {
+            timber.log.Timber.e(e, "SVOi admin FAB add failed (non-fatal)")
         }
-        val density = resources.displayMetrics.density
-        val sizePx = (56 * density).toInt()
-        val marginPx = (16 * density).toInt()
-        val params = android.widget.FrameLayout.LayoutParams(sizePx, sizePx).apply {
-            gravity = android.view.Gravity.BOTTOM or android.view.Gravity.END
-            setMargins(0, 0, marginPx, marginPx + (80 * density).toInt())
-        }
-        rootView.addView(btn, params)
     }
 
 
@@ -239,22 +244,25 @@ class HomeActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // SVOi: один раз после регистрации показать phone setup, затем экран контактов
+        // SVOi: SVOi-onboarding, защищён try-catch чтобы любая ошибка СВОи-кода не крашила Element
         if (savedInstanceState == null) {
-            val session = activeSessionHolder.getSafeActiveSession()
-            if (session != null) {
-                if (!im.vector.app.features.svoi.onboarding.SvoiPhoneSetupFragment.isCompleted(this, session.myUserId)) {
-                    startActivity(android.content.Intent(this, im.vector.app.features.svoi.onboarding.SvoiPhoneSetupActivity::class.java))
-                } else {
-                    val contactsShownKey = "svoi_contacts_first_shown_${session.myUserId}"
-                    val prefs = getSharedPreferences("svoi_onboarding", android.content.Context.MODE_PRIVATE)
-                    if (!prefs.getBoolean(contactsShownKey, false)) {
-                        prefs.edit().putBoolean(contactsShownKey, true).apply()
-                        startActivity(im.vector.app.features.svoi.contacts.SvoiContactsActivity.getIntent(this))
+            try {
+                val session = activeSessionHolder.getSafeActiveSession()
+                if (session != null) {
+                    if (!im.vector.app.features.svoi.onboarding.SvoiPhoneSetupFragment.isCompleted(this, session.myUserId)) {
+                        startActivity(android.content.Intent(this, im.vector.app.features.svoi.onboarding.SvoiPhoneSetupActivity::class.java))
+                    } else {
+                        val contactsShownKey = "svoi_contacts_first_shown_${session.myUserId}"
+                        val prefs = getSharedPreferences("svoi_onboarding", android.content.Context.MODE_PRIVATE)
+                        if (!prefs.getBoolean(contactsShownKey, false)) {
+                            prefs.edit().putBoolean(contactsShownKey, true).apply()
+                            startActivity(im.vector.app.features.svoi.contacts.SvoiContactsActivity.getIntent(this))
+                        }
                     }
+                    addSvoiAdminFabIfAdmin(session.myUserId)
                 }
-                // SVOi: для админа добавить FAB-кнопку '🛠 Админ'
-                addSvoiAdminFabIfAdmin(session.myUserId)
+            } catch (e: Throwable) {
+                timber.log.Timber.e(e, "SVOi onboarding hook failed (non-fatal)")
             }
         }
 
