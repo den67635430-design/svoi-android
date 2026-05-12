@@ -139,72 +139,35 @@ class HomeActivity :
     @Inject lateinit var svoiApiClient: SvoiApiClient
     private var svoiVersionChecker: SvoiVersionChecker? = null
 
-    /** SVOi: FAB "📕 Контакты" для всех юзеров — открыть синхронизацию с телефонной книгой. */
-    private fun addSvoiContactsFab() {
+    /** SVOi: добавляем пункты "Контакты" и "Админ-настройки" в стандартный options menu Element (три точки). */
+    override fun onPrepareOptionsMenu(menu: android.view.Menu): Boolean {
         try {
-            val rootView = findViewById<android.view.ViewGroup>(android.R.id.content) ?: return
-            if (rootView.findViewWithTag<android.view.View>("svoi_contacts_fab") != null) return
-
-            val btn = android.widget.TextView(this).apply {
-                tag = "svoi_contacts_fab"
-                text = "📕"
-                textSize = 22f
-                gravity = android.view.Gravity.CENTER
-                setTextColor(android.graphics.Color.WHITE)
-                setBackgroundColor(android.graphics.Color.parseColor("#4CAF50"))
-                isClickable = true
-                isFocusable = true
-                elevation = 12f
-                setOnClickListener {
-                    runCatching {
-                        startActivity(im.vector.app.features.svoi.contacts.SvoiContactsActivity.getIntent(this@HomeActivity))
-                    }
-                }
-            }
-            val density = resources.displayMetrics.density
-            val sizePx = (56 * density).toInt()
-            val marginPx = (16 * density).toInt()
-            val params = android.widget.FrameLayout.LayoutParams(sizePx, sizePx).apply {
-                gravity = android.view.Gravity.BOTTOM or android.view.Gravity.END
-                // Стандартное место FAB
-                setMargins(0, 0, marginPx, marginPx + (80 * density).toInt())
-            }
-            rootView.addView(btn, params)
-        } catch (e: Throwable) {
-            timber.log.Timber.e(e, "SVOi contacts FAB add failed (non-fatal)")
-        }
-    }
-
-    /** SVOi: для админа — долгий тап на собственном аватаре в шапке открывает админ-настройки. */
-    private fun installAdminLongPressIfAdmin(userId: String) {
-        try {
-            if (userId !in SVOI_ADMIN_IDS) return
-            // Используем post чтобы дать ViewBinding отрисоваться. Ищем все ImageView в шапке.
-            findViewById<android.view.View>(android.R.id.content)?.post {
-                attachLongPressToAvatar(findViewById<android.view.View>(android.R.id.content))
+            menu.removeItem(SVOI_MENU_CONTACTS)
+            menu.removeItem(SVOI_MENU_ADMIN)
+            val contactsItem = menu.add(android.view.Menu.NONE, SVOI_MENU_CONTACTS, 0, "📕 Контакты")
+            contactsItem.setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_NEVER)
+            val myUserId = activeSessionHolder.getSafeActiveSession()?.myUserId
+            if (myUserId in SVOI_ADMIN_IDS) {
+                val adminItem = menu.add(android.view.Menu.NONE, SVOI_MENU_ADMIN, 1, "🛠 Админ-настройки")
+                adminItem.setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_NEVER)
             }
         } catch (e: Throwable) {
-            timber.log.Timber.e(e, "SVOi admin long-press install failed (non-fatal)")
+            timber.log.Timber.e(e, "SVOi menu prep failed")
         }
+        return super.onPrepareOptionsMenu(menu)
     }
 
-    private fun attachLongPressToAvatar(root: android.view.View?) {
-        if (root == null) return
-        when (root) {
-            is android.widget.ImageView -> {
-                val desc = root.contentDescription?.toString().orEmpty().lowercase()
-                if (desc.contains("avatar") || desc.contains("аватар") || desc.contains("profile") || desc.contains("профил")) {
-                    root.setOnLongClickListener {
-                        runCatching {
-                            startActivity(im.vector.app.features.svoi.settings.SvoiSettingsActivity.getIntent(this@HomeActivity))
-                        }
-                        true
-                    }
-                }
+    override fun onOptionsItemSelected(item: android.view.MenuItem): Boolean {
+        return when (item.itemId) {
+            SVOI_MENU_CONTACTS -> {
+                runCatching { startActivity(im.vector.app.features.svoi.contacts.SvoiContactsActivity.getIntent(this)) }
+                true
             }
-            is android.view.ViewGroup -> {
-                for (i in 0 until root.childCount) attachLongPressToAvatar(root.getChildAt(i))
+            SVOI_MENU_ADMIN -> {
+                runCatching { startActivity(im.vector.app.features.svoi.settings.SvoiSettingsActivity.getIntent(this)) }
+                true
             }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
@@ -292,10 +255,8 @@ class HomeActivity :
                             startActivity(im.vector.app.features.svoi.contacts.SvoiContactsActivity.getIntent(this))
                         }
                     }
-                    // SVOi: только зелёная FAB "Контакты". Админ-настройки доступны
-                    // через долгий тап на собственном аватаре (см. installAdminLongPress)
-                    addSvoiContactsFab()
-                    installAdminLongPressIfAdmin(session.myUserId)
+                    // SVOi: меню (три точки) теперь содержит пункты "Контакты" и (для админа) "Админ-настройки"
+                    // см. onCreateOptionsMenu/onOptionsItemSelected ниже
                 }
             } catch (e: Throwable) {
                 timber.log.Timber.e(e, "SVOi onboarding hook failed (non-fatal)")
@@ -842,6 +803,9 @@ class HomeActivity :
                 "@denis:svo.kodkontenta.ru",
                 "@admin:svo.kodkontenta.ru",
         )
+
+        private const val SVOI_MENU_CONTACTS = 9001
+        private const val SVOI_MENU_ADMIN = 9002
 
         fun newIntent(
                 context: Context,
