@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:background="#1E1E1E"
-        android:padding="16dp"
+        android:padding="14dp"
         android:gravity="center_vertical">
 
         <TextView
@@ -18,7 +18,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="←"
-            android:textSize="28sp"
+            android:textSize="26sp"
             android:textColor="#FFFFFF"
             android:padding="4dp"
             android:clickable="true"
@@ -28,11 +28,22 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="14dp"
             android:text="Контакты"
             android:textColor="#FFFFFF"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/svoiContactsSelectAll"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Все"
+            android:textColor="#4CAF50"
+            android:textSize="14sp"
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true"/>
 
         <TextView
             android:id="@+id/svoiContactsRefreshButton"
@@ -120,4 +131,23 @@
                 android:padding="14dp"/>
         </LinearLayout>
     </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/svoiContactsActions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="#1A1A1A"
+        android:padding="10dp"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/svoiContactsInviteBtn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Пригласить (0)"
+            android:textColor="#FFFFFF"
+            android:background="#4CAF50"/>
+    </LinearLayout>
 </LinearLayout>

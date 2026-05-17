@@ -3,13 +3,14 @@ package im.vector.app.features.svoi.contacts
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
+import android.widget.CheckBox
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import im.vector.app.R
 
 class SvoiContactsAdapter(
-        private val onClick: (SvoiContactItem) -> Unit,
+        private val onItemClick: (SvoiContactItem) -> Unit,
+        private val onSelectionChanged: () -> Unit,
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val items = mutableListOf<SvoiContactItem>()
@@ -18,6 +19,24 @@ class SvoiContactsAdapter(
         items.clear()
         items.addAll(newItems)
         notifyDataSetChanged()
+    }
+
+    fun selectedRegistered(): List<SvoiContactItem.Registered> =
+            items.filterIsInstance<SvoiContactItem.Registered>().filter { it.selected }
+
+    fun selectedInvitable(): List<SvoiContactItem.Invitable> =
+            items.filterIsInstance<SvoiContactItem.Invitable>().filter { it.selected }
+
+    fun selectAll(value: Boolean) {
+        items.forEach {
+            when (it) {
+                is SvoiContactItem.Registered -> it.selected = value
+                is SvoiContactItem.Invitable -> it.selected = value
+                else -> Unit
+            }
+        }
+        notifyDataSetChanged()
+        onSelectionChanged()
     }
 
     override fun getItemCount() = items.size
@@ -41,8 +60,8 @@ class SvoiContactsAdapter(
         val item = items[position]
         when (holder) {
             is HeaderVH -> holder.bind(item as SvoiContactItem.Header)
-            is RegisteredVH -> holder.bind(item as SvoiContactItem.Registered, onClick)
-            is InvitableVH -> holder.bind(item as SvoiContactItem.Invitable, onClick)
+            is RegisteredVH -> holder.bind(item as SvoiContactItem.Registered, onItemClick, onSelectionChanged)
+            is InvitableVH -> holder.bind(item as SvoiContactItem.Invitable, onItemClick, onSelectionChanged)
         }
     }
 
@@ -54,21 +73,34 @@ class SvoiContactsAdapter(
     private class RegisteredVH(v: View) : RecyclerView.ViewHolder(v) {
         private val name: TextView = v.findViewById(R.id.name)
         private val sub: TextView = v.findViewById(R.id.sub)
-        fun bind(c: SvoiContactItem.Registered, onClick: (SvoiContactItem) -> Unit) {
+        private val cb: CheckBox? = v.findViewById(R.id.checkbox)
+        fun bind(c: SvoiContactItem.Registered, onItemClick: (SvoiContactItem) -> Unit, onSel: () -> Unit) {
             name.text = c.displayName
             sub.text = c.matrixId + (c.phone?.let { " · $it" } ?: "")
-            itemView.setOnClickListener { onClick(c) }
+            cb?.setOnCheckedChangeListener(null)
+            cb?.isChecked = c.selected
+            cb?.setOnCheckedChangeListener { _, checked -> c.selected = checked; onSel() }
+            itemView.setOnClickListener {
+                cb?.toggle()
+            }
+            itemView.setOnLongClickListener { onItemClick(c); true }
         }
     }
 
     private class InvitableVH(v: View) : RecyclerView.ViewHolder(v) {
         private val name: TextView = v.findViewById(R.id.name)
         private val phone: TextView = v.findViewById(R.id.phone)
-        private val invite: Button = v.findViewById(R.id.invite)
-        fun bind(c: SvoiContactItem.Invitable, onClick: (SvoiContactItem) -> Unit) {
+        private val cb: CheckBox? = v.findViewById(R.id.checkbox)
+        fun bind(c: SvoiContactItem.Invitable, onItemClick: (SvoiContactItem) -> Unit, onSel: () -> Unit) {
             name.text = c.displayName
             phone.text = c.phone
-            invite.setOnClickListener { onClick(c) }
+            cb?.setOnCheckedChangeListener(null)
+            cb?.isChecked = c.selected
+            cb?.setOnCheckedChangeListener { _, checked -> c.selected = checked; onSel() }
+            itemView.setOnClickListener {
+                cb?.toggle()
+            }
+            itemView.setOnLongClickListener { onItemClick(c); true }
         }
     }
 }

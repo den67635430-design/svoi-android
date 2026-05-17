@@ -3,8 +3,15 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="16dp"
+    android:padding="12dp"
+    android:background="?android:attr/selectableItemBackground"
     android:gravity="center_vertical">
+
+    <CheckBox
+        android:id="@+id/checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:buttonTint="#4CAF50"/>
 
     <TextView
         android:layout_width="40dp"
@@ -12,15 +19,16 @@
         android:gravity="center"
         android:text="?"
         android:textColor="#888"
-        android:textSize="20sp"
+        android:textSize="18sp"
         android:textStyle="bold"
-        android:background="#333"/>
+        android:background="#333"
+        android:layout_marginStart="8dp"/>
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="12dp"
         android:orientation="vertical">
 
         <TextView
@@ -35,17 +43,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="#888"
-            android:textSize="13sp"/>
+            android:textSize="12sp"/>
     </LinearLayout>
-
-    <Button
-        android:id="@+id/invite"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Пригласить"
-        android:textSize="12sp"
-        android:textColor="#4CAF50"
-        android:background="@android:color/transparent"
-        android:minHeight="0dp"
-        android:padding="8dp"/>
 </LinearLayout>
