@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "922519774316",
+    "project_id": "svoi-messenger",
+    "storage_bucket": "svoi-messenger.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:922519774316:android:3ab38f5f92641cd2392449",
+        "android_client_info": {
+          "package_name": "ru.svoi.messenger"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_3IkO7Alu6l0aILhG7T6tGwWs0hSudFY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
